@@ -1,0 +1,2 @@
+npm init -y
+npm install express axios cheerio node-cache cors express-rate-limit dotenv

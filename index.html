@@ -248,7 +248,6 @@
         let fullAnimeList = [];
         let rawScheduleData = [];
 
-        // Global Cache untuk objek anime
         window.animeCache = {};
 
         const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
@@ -259,7 +258,6 @@
             return key;
         }
 
-        // Generic API Fetcher
         async function apiFetch(endpoint) {
             showLoading(true);
             hideError();
@@ -562,7 +560,6 @@
             `}).join('');
         }
 
-        // --- HANDLER KLIK ANIME ---
         function handleAnimeClick(cacheKey) {
             const item = window.animeCache[cacheKey];
             if (item) {
@@ -572,8 +569,6 @@
 
         // --- MODAL STREAMING & DETAIL LOGIC ---
         async function openAnimeDetail(item) {
-            console.log("Anime Item Selected:", item); // Cek properti di DevTools Console
-
             const modal = document.getElementById('detail-modal');
             const placeholder = document.getElementById('player-placeholder');
             const iframe = document.getElementById('video-iframe');
@@ -584,18 +579,15 @@
 
             const animeTitle = item.title || 'Detail Anime';
 
-            // Kumpulkan nilai target dari properti yang tersedia tanpa manipulasi string
             const rawTargets = [
-                item.endpoint, item.url, item.link, item.id, item.slug, item.param, item.anime_id
+                item.path, item.endpoint, item.url, item.link, item.id, item.slug, item.param, item.anime_id
             ].filter(Boolean);
 
-            // Tambahkan versi slug sederhana dari judul sebagai cadangan terakhir
             if (item.title) {
                 const generatedSlug = item.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
                 rawTargets.push(generatedSlug);
             }
 
-            // Reset Modal View
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             iframe.classList.add('hidden');
@@ -608,9 +600,8 @@
             epListEl.innerHTML = '<div class="text-xs text-gray-500">Memuat episode...</div>';
 
             let res = null;
-            const paramKeys = ['endpoint', 'url', 'id', 'path', 'param', 'slug'];
+            const paramKeys = ['path', 'endpoint', 'url', 'id', 'param', 'slug'];
 
-            // Loop uji coba otomatis kombinasi target dan query parameter
             searchLoop:
             for (const targetVal of rawTargets) {
                 for (const key of paramKeys) {
@@ -622,9 +613,7 @@
                             console.log(`Berhasil terhubung menggunakan parameter: ?${key}=${targetVal}`);
                             break searchLoop;
                         }
-                    } catch (e) {
-                        // Lanjut mencoba kombinasi berikutnya jika status 400/error
-                    }
+                    } catch (e) {}
                 }
             }
 
@@ -640,22 +629,20 @@
                     ${detail.genres ? detail.genres.map(g => `<span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">${g}</span>`).join('') : ''}
                 `;
 
-                // Handle Episode List
                 const episodes = detail.episodes || detail.episode_list || [];
                 if (episodes.length > 0) {
                     epListEl.innerHTML = episodes.map((ep, idx) => {
-                        const streamTarget = ep.stream_url || ep.url || ep.id || ep.endpoint;
-                        const epKey = storeAnime({ url: streamTarget });
+                        const streamTarget = ep.stream_url || ep.url || ep.id || ep.endpoint || ep.path;
+                        const epKey = storeAnime({ url: streamTarget, title: ep.title || `Episode ${idx+1}` });
                         return `
                         <button onclick="playEpisodeFromCache('${epKey}')" 
                                 class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
-                            <i class="fa-solid fa-play text-[10px]"></i> Episode ${ep.episode || ep.title || (idx + 1)}
+                            <i class="fa-solid fa-play text-[10px]"></i> ${ep.title || `Episode ${ep.episode || (idx + 1)}`}
                         </button>
                     `}).join('');
 
-                    // Auto-play episode 1
                     const firstEp = episodes[0];
-                    playEpisode(firstEp.stream_url || firstEp.url || firstEp.id || firstEp.endpoint);
+                    playEpisode(firstEp.stream_url || firstEp.url || firstEp.id || firstEp.endpoint || firstEp.path);
                 } else if (detail.stream_url || detail.embed_url) {
                     playEpisode(detail.stream_url || detail.embed_url);
                     epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
@@ -664,10 +651,9 @@
                     placeholder.innerHTML = `<p class="text-xs text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sumber pemutar video tidak ditemukan.</p>`;
                 }
             } else {
-                // Fallback jika API detail tidak merespons
                 synopEl.innerText = item.deskripsi || "Gagal memuat detail anime dari server.";
                 epListEl.innerHTML = `<span class="text-xs text-gray-500">Gagal mengambil daftar episode.</span>`;
-                placeholder.innerHTML = `<p class="text-xs text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal memuat pemutar video (HTTP 400).</p>`;
+                placeholder.innerHTML = `<p class="text-xs text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal memuat pemutar video.</p>`;
             }
         }
 
@@ -678,21 +664,52 @@
             }
         }
 
-        function playEpisode(urlOrId) {
+        // --- ASYNC VIDEO STREAMING FETCHER ---
+        async function playEpisode(urlOrId) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
             if (!urlOrId) return;
 
-            placeholder.classList.add('hidden');
-            iframe.classList.remove('hidden');
+            placeholder.classList.remove('hidden');
+            placeholder.innerHTML = `
+                <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                <p class="text-xs text-gray-400 animate-pulse">Membuat koneksi stream video...</p>
+            `;
+            iframe.classList.add('hidden');
+            iframe.src = '';
 
-            let targetSrc = String(urlOrId);
-            if (!targetSrc.startsWith('http://') && !targetSrc.startsWith('https://')) {
-                targetSrc = `${BASE_URL}/stream?id=${encodeURIComponent(targetSrc)}`;
+            let finalEmbedUrl = String(urlOrId);
+
+            // Jika nilai bukan URL langsung, panggil API /stream untuk mengambil URL embed iframe
+            if (!finalEmbedUrl.startsWith('http://') && !finalEmbedUrl.startsWith('https://')) {
+                const streamParamKeys = ['path', 'id', 'endpoint', 'url', 'slug'];
+                let streamRes = null;
+
+                for (const pKey of streamParamKeys) {
+                    try {
+                        const testUrl = `/stream?${pKey}=${encodeURIComponent(finalEmbedUrl)}`;
+                        const res = await apiFetch(testUrl);
+                        if (res && (res.stream_url || res.embed_url || res.url || res.data)) {
+                            streamRes = res;
+                            break;
+                        }
+                    } catch (e) {}
+                }
+
+                if (streamRes) {
+                    const data = streamRes.data || streamRes;
+                    finalEmbedUrl = data.embed_url || data.stream_url || data.url || data.link || finalEmbedUrl;
+                }
             }
 
-            iframe.src = targetSrc;
+            if (finalEmbedUrl && (finalEmbedUrl.startsWith('http://') || finalEmbedUrl.startsWith('https://'))) {
+                placeholder.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                iframe.src = finalEmbedUrl;
+            } else {
+                placeholder.innerHTML = `<p class="text-xs text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal memuat URL pemutar video.</p>`;
+            }
         }
 
         function closeModal() {
@@ -703,12 +720,10 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Close modal on backdrop click
         document.getElementById('detail-modal').addEventListener('click', (e) => {
             if (e.target.id === 'detail-modal') closeModal();
         });
 
-        // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             switchTab('home');
         });

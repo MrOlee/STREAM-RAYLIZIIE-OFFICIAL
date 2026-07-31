@@ -8,46 +8,44 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom Styles -->
-    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .media-card { min-width: 160px; width: 160px; transition: transform 0.3s ease; }
+        @media (min-width: 768px) { .media-card { min-width: 200px; width: 200px; } }
+        .media-card:hover { transform: scale(1.05); z-index: 30; }
+    </style>
 </head>
-<body class="bg-[#141414] text-white font-sans antialiased selection:bg-orange-500 selection:text-white">
+<body class="bg-[#141414] text-white font-sans antialiased">
 
     <!-- NAVBAR HEADER -->
     <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-black/90 to-transparent px-4 lg:px-12 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-8">
-            <!-- LOGO WEBSITE (Ganti URL gambar di bawah ini dengan logo milik Anda) -->
             <a href="#" class="flex items-center">
-              <a href="#" class="flex items-center">
-    <img id="site-logo" src="https://iili.io/C8mKZsj.png" alt="STREAM RAYLIZIIE OFFICIAL" class="h-9 md:h-11 object-contain">
-</a>
-
-            <!-- MENU NAVIGASI -->
+                <img id="site-logo" src="https://iili.io/C8mKZsj.png" alt="STREAM RAYLIZIIE OFFICIAL" class="h-9 md:h-11 object-contain">
+            </a>
             <nav class="hidden md:flex space-x-6 text-sm font-medium text-gray-300">
-                <a href="#" onclick="switchCategory('all')" class="hover:text-orange-500 transition">Beranda</a>
-                <a href="#" onclick="switchCategory('anime')" class="hover:text-orange-500 transition">Anime</a>
-                <a href="#" onclick="switchCategory('drakor')" class="hover:text-orange-500 transition">Drakor</a>
-                <a href="#" onclick="switchCategory('films')" class="hover:text-orange-500 transition">Film</a>
-                <a href="#" onclick="switchCategory('live')" class="hover:text-orange-500 transition"><i class="fa-solid fa-circle text-red-600 text-xs mr-1 animate-pulse"></i>Live TV</a>
+                <a href="#" onclick="location.reload()" class="hover:text-orange-500 transition">Beranda</a>
+                <a href="#animeSection" class="hover:text-orange-500 transition">Anime</a>
+                <a href="#drakorSection" class="hover:text-orange-500 transition">Drakor</a>
+                <a href="#filmsSection" class="hover:text-orange-500 transition">Film</a>
             </nav>
         </div>
-
-        <!-- SEARCH BAR & USER ACTION -->
         <div class="flex items-center space-x-4">
             <div class="relative">
-                <input type="text" id="searchInput" placeholder="Cari anime, drakor, film..." class="bg-black/60 border border-gray-700 text-xs md:text-sm rounded-full py-2 pl-9 pr-4 focus:outline-none focus:border-orange-500 w-36 md:w-64 transition-all">
+                <input type="text" id="searchInput" placeholder="Cari tayangan..." class="bg-black/60 border border-gray-700 text-xs md:text-sm rounded-full py-2 pl-9 pr-4 focus:outline-none focus:border-orange-500 w-36 md:w-64">
                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
             </div>
         </div>
     </header>
 
-    <!-- HERO BANNER (NETFLIX STYLE) -->
-    <section id="heroSection" class="relative w-full h-[70vh] md:h-[85vh] bg-cover bg-center flex items-end pb-12 px-4 lg:px-12">
+    <!-- HERO BANNER -->
+    <section id="heroSection" class="relative w-full h-[70vh] md:h-[85vh] bg-cover bg-center flex items-end pb-12 px-4 lg:px-12 bg-gray-900">
         <div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/40 to-black/60"></div>
         <div class="relative z-10 max-w-2xl space-y-4">
             <span class="bg-orange-600 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">FEATURED</span>
             <h1 id="heroTitle" class="text-3xl md:text-6xl font-extrabold tracking-tight">Memuat Konten...</h1>
-            <p id="heroDesc" class="text-xs md:text-sm text-gray-300 line-clamp-3">Silakan tunggu sebentar, katalog streaming sedang disiapkan untuk Anda.</p>
+            <p id="heroDesc" class="text-xs md:text-sm text-gray-300 line-clamp-3">Menghubungkan ke server STREAM RAYLIZIIE OFFICIAL...</p>
             <div class="flex space-x-3 pt-2">
                 <button id="heroPlayBtn" class="bg-orange-500 hover:bg-orange-600 text-black font-bold px-6 py-2.5 rounded-lg flex items-center space-x-2 transition">
                     <i class="fa-solid fa-play"></i> <span>Tonton Sekarang</span>
@@ -56,45 +54,40 @@
         </div>
     </section>
 
-    <!-- CONTAINER ROW KONTEN (CRUNCHYROLL CAROUSEL STYLE) -->
+    <!-- MAIN CONTENT -->
     <main class="px-4 lg:px-12 -mt-16 relative z-20 space-y-10 pb-16">
-        
-        <!-- ROW 1: ANIME POPULER -->
-        <section class="space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> Anime Terbaru & Trending
-                </h2>
+        <section id="animeSection" class="space-y-3">
+            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> Anime Terbaru & Trending
+            </h2>
+            <div id="animeRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
+                <p class="text-gray-500 text-sm animate-pulse">Memuat data anime...</p>
             </div>
-            <div id="animeRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2"></div>
         </section>
 
-        <!-- ROW 2: DRAMA KOREA -->
-        <section class="space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span> Drama Korea & Asia
-                </h2>
+        <section id="drakorSection" class="space-y-3">
+            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span> Drama Korea & Asia
+            </h2>
+            <div id="drakorRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
+                <p class="text-gray-500 text-sm animate-pulse">Memuat data drakor...</p>
             </div>
-            <div id="drakorRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2"></div>
         </section>
 
-        <!-- ROW 3: FILM & BIOSKOP -->
-        <section class="space-y-3">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <span class="w-1.5 h-6 bg-red-600 rounded-full"></span> Bioskop & Film
-                </h2>
+        <section id="filmsSection" class="space-y-3">
+            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-red-600 rounded-full"></span> Bioskop & Film
+            </h2>
+            <div id="filmsRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
+                <p class="text-gray-500 text-sm animate-pulse">Memuat data film...</p>
             </div>
-            <div id="filmsRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2"></div>
         </section>
-
     </main>
 
     <!-- STREAMING MODAL / PLAYER -->
     <div id="playerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-[#1f1f1f] border border-gray-800 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center">
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div class="aspect-video w-full bg-black">
@@ -102,11 +95,6 @@
             </div>
             <div class="p-6 space-y-4">
                 <h3 id="modalTitle" class="text-2xl font-bold">Judul Tayangan</h3>
-                <div id="modalDetails" class="text-sm text-gray-400 flex flex-wrap gap-4"></div>
-                <div class="pt-4 border-t border-gray-800">
-                    <h4 class="font-semibold mb-2">Pilih Episode / Download:</h4>
-                    <div id="episodeList" class="flex flex-wrap gap-2 max-h-36 overflow-y-auto"></div>
-                </div>
             </div>
         </div>
     </div>
@@ -114,11 +102,107 @@
     <!-- FOOTER -->
     <footer class="border-t border-gray-800 py-8 text-center text-xs text-gray-500">
         <p>&copy; 2026 STREAM RAYLIZIIE OFFICIAL. All rights reserved.</p>
-        <p class="mt-1">Powered by Rayliziie Enterprise API Gateway Gateway v10.0</p>
     </footer>
 
-    <!-- SCRIPTS -->
-    <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
+    <!-- LOGIKA API INTEGRATED -->
+    <script>
+        const API_BASE_URL = 'https://api-rayliziie.rayyankrens0304.workers.dev';
+
+        // Helper untuk ekstrak array data dari berbagai respons JSON
+        function parseArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            if (Array.isArray(data.data)) return data.data;
+            if (Array.isArray(data.result)) return data.result;
+            if (Array.isArray(data.list)) return data.list;
+            return [];
+        }
+
+        async function fetchData(endpoint) {
+            try {
+                const res = await fetch(`${API_BASE_URL}${endpoint}`);
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                return parseArray(json);
+            } catch (err) {
+                console.error('Error fetching ' + endpoint + ':', err);
+                return [];
+            }
+        }
+
+        async function init() {
+            // Load Anime
+            const animeData = await fetchData('/animekompi/home');
+            if (animeData.length > 0) {
+                setupHero(animeData[0], 'animekompi');
+                renderRow('animeRow', animeData, 'animekompi');
+            } else {
+                document.getElementById('animeRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data anime.</p>';
+            }
+
+            // Load Drakor
+            const drakorData = await fetchData('/dramovnime/tab');
+            if (drakorData.length > 0) {
+                renderRow('drakorRow', drakorData, 'dramovnime');
+            } else {
+                document.getElementById('drakorRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data drakor.</p>';
+            }
+
+            // Load Films
+            const filmData = await fetchData('/filmbox/home');
+            if (filmData.length > 0) {
+                renderRow('filmsRow', filmData, 'filmbox');
+            } else {
+                document.getElementById('filmsRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data film.</p>';
+            }
+        }
+
+        function setupHero(item, category) {
+            document.getElementById('heroTitle').innerText = item.title || item.name || 'Tayangan Unggulan';
+            document.getElementById('heroDesc').innerText = item.synopsis || item.description || 'Saksikan penayangan lengkapnya secara gratis di STREAM RAYLIZIIE OFFICIAL.';
+            
+            const bg = item.banner || item.poster || item.cover;
+            if (bg) {
+                document.getElementById('heroSection').style.backgroundImage = `url('${bg}')`;
+            }
+            document.getElementById('heroPlayBtn').onclick = () => openPlayer(item.title || item.name, item.id || item.slug, category);
+        }
+
+        function renderRow(containerId, items, category) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            items.forEach(item => {
+                const title = item.title || item.name || item.judul || 'Tanpa Judul';
+                const poster = item.poster || item.cover || item.image || item.thumb || 'https://via.placeholder.com/300x450';
+                const id = item.id || item.slug || item.endpoint || item.link;
+
+                const card = document.createElement('div');
+                card.className = 'media-card flex-shrink-0 cursor-pointer group relative rounded-lg overflow-hidden bg-gray-900 border border-gray-800';
+                card.innerHTML = `
+                    <img src="${poster}" alt="${title}" class="w-full h-60 md:h-72 object-cover rounded-lg group-hover:scale-105 transition duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 p-3 flex flex-col justify-end">
+                        <p class="text-xs font-bold line-clamp-2 text-white">${title}</p>
+                        <span class="text-[10px] text-orange-400 mt-1 uppercase font-semibold">${category}</span>
+                    </div>
+                `;
+                card.onclick = () => openPlayer(title, id, category);
+                container.appendChild(card);
+            });
+        }
+
+        function openPlayer(title, id, category) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('videoIframe').src = `${API_BASE_URL}/${category}/play?id=${encodeURIComponent(id)}`;
+            document.getElementById('playerModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('videoIframe').src = '';
+            document.getElementById('playerModal').classList.add('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>

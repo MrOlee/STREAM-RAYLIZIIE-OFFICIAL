@@ -81,7 +81,7 @@
         <span>Drama Korea & Asia</span>
       </h2>
       <div id="drakorContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Konten drakor akan segera hadir.</p>
+        <p class="text-gray-500 text-sm">Segera hadir.</p>
       </div>
     </section>
 
@@ -92,7 +92,7 @@
         <span>Bioskop & Film</span>
       </h2>
       <div id="filmContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Konten film akan segera hadir.</p>
+        <p class="text-gray-500 text-sm">Segera hadir.</p>
       </div>
     </section>
 
@@ -113,7 +113,7 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
-    const API_BASE_URL = 'https://api-rayliziie.rayyan-official.site';
+    const API_BASE_URL = 'https://api-rayliziie.rayyankrens0304.workers.dev';
     const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
 
     function fixImageUrl(url) {
@@ -189,7 +189,7 @@
       `;
     }
 
-    // 1. FETCH ANIME (ISOLATED & SAFE)
+    // 1. FETCH ANIME (INDINPENDENT)
     async function fetchAnime() {
       const container = document.getElementById('animeContainer');
       try {
@@ -200,7 +200,6 @@
         if (json.code === 0 && json.data && json.data.length > 0) {
           container.innerHTML = json.data.map(item => createCard(item)).join('');
           
-          // Set Featured Header
           const first = json.data[0];
           document.getElementById('featuredTitle').innerText = first.title;
           document.getElementById('btnTontonFeatured').onclick = () => openPlayerModal(first.id || first.path);
@@ -213,45 +212,38 @@
       }
     }
 
-    // 2. FETCH DRAKOR (HANDLES 404 SILENTLY)
+    // 2. FETCH DRAKOR (ISOLATED CATCH FOR 404)
     async function fetchDrakor() {
       const container = document.getElementById('drakorContainer');
       try {
         const res = await fetch(`${API_BASE_URL}/dramovnime/tab`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) return; // Diamkan jika 404
         const json = await res.json();
 
         if (json.code === 0 && json.data && json.data.length > 0) {
           container.innerHTML = json.data.map(item => createCard(item)).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor belum tersedia.</p>`;
         }
       } catch (err) {
-        // Jangan menghentikan aplikasi jika 404
-        container.innerHTML = `<p class="text-gray-500 text-sm">Segera hadir.</p>`;
+        // Abaikan error agar tidak merusak UI lain
       }
     }
 
-    // 3. FETCH FILM (HANDLES 404 SILENTLY)
+    // 3. FETCH FILM (ISOLATED CATCH FOR 404)
     async function fetchFilm() {
       const container = document.getElementById('filmContainer');
       try {
         const res = await fetch(`${API_BASE_URL}/filmbox/home`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) return; // Diamkan jika 404
         const json = await res.json();
 
         if (json.code === 0 && json.data && json.data.length > 0) {
           container.innerHTML = json.data.map(item => createCard(item)).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Film belum tersedia.</p>`;
         }
       } catch (err) {
-        // Jangan menghentikan aplikasi jika 404
-        container.innerHTML = `<p class="text-gray-500 text-sm">Segera hadir.</p>`;
+        // Abaikan error
       }
     }
 
-    // Jalankan semua fetch secara mandiri
     document.addEventListener('DOMContentLoaded', () => {
       fetchAnime();
       fetchDrakor();

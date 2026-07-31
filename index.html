@@ -206,6 +206,19 @@
             }
         }
 
+        function extractItems(res) {
+            if (!res) return [];
+            if (Array.isArray(res)) return res;
+            if (Array.isArray(res.data)) return res.data;
+            if (res.data && Array.isArray(res.data.list)) return res.data.list;
+            if (res.data && Array.isArray(res.data.items)) return res.data.items;
+            if (res.data && Array.isArray(res.data.data)) return res.data.data;
+            if (Array.isArray(res.result)) return res.result;
+            if (res.result && Array.isArray(res.result.list)) return res.result.list;
+            if (Array.isArray(res.list)) return res.list;
+            return [];
+        }
+
         function showLoading(state) {
             document.getElementById('loading').className = state ? 'flex flex-col items-center justify-center py-20 gap-3' : 'hidden';
         }
@@ -226,6 +239,7 @@
 
         function switchCategory(cat) {
             activeCategory = cat;
+            document.getElementById('search-input').value = '';
 
             // Update desktop tabs
             document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -273,8 +287,8 @@
                     method: 'POST',
                     body: JSON.stringify({ channelId: "2", page: "1", perPage: "20", sort: "ForYou", genre: "All", country: "All" })
                 });
-                const items = res.data || res.result || res.list || res || [];
-                renderGrid(Array.isArray(items) ? items : []);
+                const items = extractItems(res);
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }
@@ -283,8 +297,8 @@
         async function loadFilmsContent() {
             try {
                 const res = await apiFetch('/filmbox/trending?page=0&perPage=20');
-                const items = res.data || res.result || res || [];
-                renderGrid(Array.isArray(items) ? items : []);
+                const items = extractItems(res);
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }
@@ -293,8 +307,8 @@
         async function loadDrakorContent() {
             try {
                 const res = await apiFetch('/iqiyi/trending');
-                const items = res.data || res.result || res || [];
-                renderGrid(Array.isArray(items) ? items : []);
+                const items = extractItems(res);
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }
@@ -310,7 +324,7 @@
             grid.innerHTML = items.map(item => {
                 const key = storeItem(item);
                 const title = item.title || item.name || item.subjectTitle || 'Judul Konten';
-                const thumb = item.cover_url || item.thumb || item.poster || placeholderImg;
+                const thumb = item.cover_url || item.thumb || item.poster || item.image || placeholderImg;
                 const badge = item.episode || item.sub || item.type || 'Sub Indo';
 
                 return `
@@ -334,17 +348,32 @@
                 return;
             }
             try {
-                let res;
-                if (activeCategory === 'drakor') {
-                    res = await apiFetch(`/iqiyi/search?q=${encodeURIComponent(query)}`);
-                } else {
-                    res = await apiFetch(`/filmbox/search`, {
+                let items = [];
+                if (activeCategory === 'anime') {
+                    const cached = window.mediaCache || {};
+                    items = Object.values(cached).filter(item => {
+                        const t = (item.title || item.name || '').toLowerCase();
+                        return t.includes(query.toLowerCase());
+                    });
+                    if (items.length === 0) {
+                        const listRes = await apiFetch('/dramovnime/list', {
+                            method: 'POST',
+                            body: JSON.stringify({ channelId: "2", page: "1", perPage: "50", sort: "ForYou", genre: "All", country: "All" })
+                        });
+                        const allItems = extractItems(listRes);
+                        items = allItems.filter(i => (i.title || i.name || '').toLowerCase().includes(query.toLowerCase()));
+                    }
+                } else if (activeCategory === 'films') {
+                    const res = await apiFetch(`/filmbox/search`, {
                         method: 'POST',
                         body: JSON.stringify({ keyword: query, page: "1", perPage: "20", subjectType: "2" })
                     });
+                    items = extractItems(res);
+                } else if (activeCategory === 'drakor') {
+                    const res = await apiFetch(`/iqiyi/search?q=${encodeURIComponent(query)}`);
+                    items = extractItems(res);
                 }
-                const items = res.data || res.result || res || [];
-                renderGrid(Array.isArray(items) ? items : []);
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }

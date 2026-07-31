@@ -95,34 +95,25 @@
 
         <!-- TAB 1: HOME -->
         <section id="tab-home" class="tab-content space-y-10">
-            <!-- Featured Sliders Carousel -->
             <div>
                 <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-fire text-amber-500"></i> Featured Spotlight
                 </h2>
-                <div id="slider-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Dynamic Slider Cards -->
-                </div>
+                <div id="slider-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
 
-            <!-- Trending Today -->
             <div>
                 <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-indigo-400"></i> Trending Hari Ini
                 </h2>
-                <div id="trending-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <!-- Dynamic Cards -->
-                </div>
+                <div id="trending-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             </div>
 
-            <!-- Latest Updates -->
             <div>
                 <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-clock-rotate-left text-pink-400"></i> Update Terbaru
                 </h2>
-                <div id="latest-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    <!-- Dynamic Cards -->
-                </div>
+                <div id="latest-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
             </div>
         </section>
 
@@ -131,16 +122,8 @@
             <h2 class="text-xl font-bold text-white flex items-center gap-2">
                 <i class="fa-solid fa-calendar-check text-emerald-400"></i> Jadwal Rilis Mingguan
             </h2>
-            
-            <!-- Day Selector Tabs -->
-            <div id="day-tabs" class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800">
-                <!-- Dynamic Day Buttons -->
-            </div>
-
-            <!-- Schedule Anime Grid -->
-            <div id="schedule-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                <!-- Dynamic Cards -->
-            </div>
+            <div id="day-tabs" class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800"></div>
+            <div id="schedule-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
         </section>
 
         <!-- TAB 3: GENRES -->
@@ -153,13 +136,7 @@
                     <i class="fa-solid fa-arrow-left mr-1"></i> Semua Genre
                 </button>
             </div>
-
-            <!-- Genre Tags Container -->
-            <div id="genre-list" class="flex flex-wrap gap-2">
-                <!-- Dynamic Genre Badges -->
-            </div>
-
-            <!-- Genre Anime Detail Grid -->
+            <div id="genre-list" class="flex flex-wrap gap-2"></div>
             <div id="genre-detail-container" class="hidden space-y-4">
                 <h3 id="selected-genre-title" class="text-lg font-semibold text-indigo-400"></h3>
                 <div id="genre-anime-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
@@ -172,23 +149,14 @@
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
                     <i class="fa-solid fa-book-bookmark text-cyan-400"></i> Semua Koleksi Anime
                 </h2>
-                <!-- Search Box -->
                 <div class="relative w-full sm:w-64">
                     <input type="text" id="anime-search" oninput="filterAnimeList()" placeholder="Cari judul anime..." 
                            class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 pl-9 text-xs text-gray-200 focus:outline-none focus:border-indigo-500">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-xs"></i>
                 </div>
             </div>
-
-            <!-- Alphabet Group Tabs -->
-            <div id="alpha-groups" class="flex gap-1 flex-wrap pb-2 border-b border-gray-800">
-                <!-- Group Buttons -->
-            </div>
-
-            <!-- Anime List View -->
-            <div id="anime-list-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                <!-- Dynamic Links -->
-            </div>
+            <div id="alpha-groups" class="flex gap-1 flex-wrap pb-2 border-b border-gray-800"></div>
+            <div id="anime-list-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </section>
 
     </main>
@@ -197,7 +165,6 @@
     <div id="detail-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative flex flex-col">
             
-            <!-- Close Button -->
             <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-gray-800/80 hover:bg-gray-700 text-gray-300 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
@@ -213,26 +180,21 @@
 
             <!-- Modal Content -->
             <div class="p-6 space-y-6">
-                <!-- Anime Title & Meta -->
                 <div>
                     <h2 id="modal-title" class="text-xl font-bold text-white mb-2"></h2>
                     <div id="modal-meta" class="flex flex-wrap gap-2 text-xs text-gray-400"></div>
                 </div>
 
-                <!-- Synopsis -->
                 <div>
                     <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Sinopsis</h3>
                     <p id="modal-synopsis" class="text-xs text-gray-300 leading-relaxed"></p>
                 </div>
 
-                <!-- Episode Selector Grid -->
                 <div>
                     <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-list text-indigo-400"></i> Pilih Episode
                     </h3>
-                    <div id="episode-list" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-                        <!-- Dynamic Episode Buttons -->
-                    </div>
+                    <div id="episode-list" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
             </div>
 
@@ -258,12 +220,10 @@
             return key;
         }
 
-        // SMART DEEP-EXTRACTION UNTUK TARGET EPISODE
         function getEpTarget(ep) {
             if (!ep) return '';
             if (typeof ep === 'string') return ep.trim();
             
-            // Prioritas nama properti umum dari berbagai API
             const keys = [
                 'path', 'endpoint', 'episode_endpoint', 'url', 'link', 'id', 'slug', 
                 'stream_url', 'embed_url', 'href', 'episode_id', 'episode_slug', 
@@ -276,7 +236,6 @@
                 }
             }
             
-            // Fallback: Cari nilai string pertama dalam objek yang bukan title/name/number
             for (const [key, val] of Object.entries(ep)) {
                 if (typeof val === 'string' && val.trim() !== '' && !['title', 'name', 'episode', 'number', 'status', 'date'].includes(key.toLowerCase())) {
                     return val.trim();
@@ -667,7 +626,6 @@
                         </button>
                     `}).join('');
 
-                    // Putar episode pertama secara otomatis dengan mengirimkan objek lengkap
                     playEpisode(episodes[0]);
                 } else if (detail.stream_url || detail.embed_url || detail.url) {
                     playEpisode(detail.stream_url || detail.embed_url || detail.url);
@@ -690,14 +648,13 @@
             }
         }
 
-        // --- PEMUTAR VIDEO DENGAN SMART EXTRACTION & PROXY FALLBACK ---
+        // --- PEMUTAR VIDEO ASYNC (MENGHINDARI VERCEL 404 PAGE IN IFRAME) ---
         async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
             let targetStr = getEpTarget(targetInput);
 
-            // Jika ekstraksi masih kosong, namun targetInput berupa objek, coba gunakan properti judul sebagai slug
             if (!targetStr && typeof targetInput === 'object' && targetInput !== null) {
                 const fallbackTitle = targetInput.title || targetInput.name || '';
                 if (fallbackTitle) {
@@ -705,20 +662,21 @@
                 }
             }
 
+            placeholder.classList.remove('hidden');
+            iframe.classList.add('hidden');
+            iframe.src = '';
+
             if (!targetStr) {
-                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Data link episode tidak ditemukan pada server.</p>`;
+                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Target episode tidak valid.</p>`;
                 return;
             }
 
-            placeholder.classList.remove('hidden');
             placeholder.innerHTML = `
                 <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                 <p class="text-xs text-gray-400 animate-pulse">Menghubungkan pemutar video...</p>
             `;
-            iframe.classList.add('hidden');
-            iframe.src = '';
 
-            // 1. Jika bernilai URL lengkap (http/https), langsung muat di iframe
+            // 1. Jika sudah berupa URL eksternal langsung (http/https)
             if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
@@ -726,9 +684,9 @@
                 return;
             }
 
-            // 2. Coba fetch JSON ke server stream API
+            // 2. Fetch data stream dari API secara latar belakang
             const streamEndpoints = ['/stream', '/episode', '/watch'];
-            const streamParamKeys = ['path', 'endpoint', 'id', 'url', 'slug', 'param'];
+            const streamParamKeys = ['path', 'endpoint', 'id', 'slug', 'url'];
             let resolvedUrl = null;
 
             for (const epPath of streamEndpoints) {
@@ -738,9 +696,15 @@
                         const res = await apiFetch(testUrl, true);
                         if (res) {
                             const data = res.data || res;
-                            const embed = data.embed_url || data.stream_url || data.url || data.link || data.stream ||
-                                          (data.stream_servers && data.stream_servers[0] ? data.stream_servers[0].url : null) ||
-                                          (data.servers && data.servers[0] ? data.servers[0].url : null);
+                            let embed = data.embed_url || data.stream_url || data.url || data.link || data.stream || data.iframe;
+                            
+                            if (!embed && Array.isArray(data.servers) && data.servers.length > 0) {
+                                embed = data.servers[0].url || data.servers[0].link || data.servers[0].embed;
+                            }
+                            if (!embed && Array.isArray(data.stream_servers) && data.stream_servers.length > 0) {
+                                embed = data.stream_servers[0].url || data.stream_servers[0].link || data.stream_servers[0].embed;
+                            }
+
                             if (embed && typeof embed === 'string' && (embed.startsWith('http://') || embed.startsWith('https://'))) {
                                 resolvedUrl = embed;
                                 break;
@@ -751,14 +715,22 @@
                 if (resolvedUrl) break;
             }
 
-            // 3. FALLBACK: Jika API tidak mengembalikan JSON URL, langsung tembak endpoint Proxy Vercel
-            if (!resolvedUrl) {
-                resolvedUrl = `${BASE_URL}/stream?path=${encodeURIComponent(targetStr)}`;
+            // 3. Hanya set iframe.src jika URL eksternal didapatkan! (Cegah penembakan path internal yang memicu Next.js 404)
+            if (resolvedUrl) {
+                placeholder.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                iframe.src = resolvedUrl;
+            } else {
+                placeholder.classList.remove('hidden');
+                iframe.classList.add('hidden');
+                iframe.src = '';
+                placeholder.innerHTML = `
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-amber-400 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Server video tidak merespons URL embed.</p>
+                        <p class="text-[10px] text-gray-500">Pastikan Vercel Serverless Function / Proxy API backend aktif.</p>
+                    </div>
+                `;
             }
-
-            placeholder.classList.add('hidden');
-            iframe.classList.remove('hidden');
-            iframe.src = resolvedUrl;
         }
 
         function closeModal() {

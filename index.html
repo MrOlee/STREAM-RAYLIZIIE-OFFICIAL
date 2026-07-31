@@ -197,7 +197,6 @@
                 }
 
                 const json = await response.json();
-                console.log(`API Response [${endpoint}]:`, json);
                 showLoading(false);
                 return json;
             } catch (err) {
@@ -207,20 +206,17 @@
             }
         }
 
-        // Deep extractor to find arrays inside any complex JSON structure
         function extractItems(res) {
             if (!res) return [];
             if (Array.isArray(res)) return res;
             if (Array.isArray(res.data)) return res.data;
 
-            // Direct check common keys
             const keys = ['list', 'items', 'data', 'result', 'animes', 'movies', 'series', 'videos', 'content', 'shows'];
             for (const k of keys) {
                 if (res[k] && Array.isArray(res[k])) return res[k];
                 if (res.data && res.data[k] && Array.isArray(res.data[k])) return res.data[k];
             }
 
-            // Deep recursive search for any valid array of objects
             function searchArray(obj) {
                 if (!obj || typeof obj !== 'object') return null;
                 for (let key in obj) {
@@ -262,14 +258,12 @@
             activeCategory = cat;
             document.getElementById('search-input').value = '';
 
-            // Update desktop tabs
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 btn.className = "cat-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors flex items-center gap-2";
             });
             const activeBtn = document.getElementById(`cat-${cat}`);
             if (activeBtn) activeBtn.className = "cat-btn px-4 py-2 rounded-lg transition-colors bg-red-600 text-white font-semibold flex items-center gap-2 shadow-md shadow-red-600/20";
 
-            // Update mobile buttons
             document.querySelectorAll('.mobile-cat-btn').forEach(btn => {
                 btn.className = "mobile-cat-btn text-gray-400 flex flex-col items-center gap-1";
             });
@@ -325,7 +319,7 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/viu/home?country=ID&lang=id');
+                const res = await apiFetch('/iqiyi/trending');
                 renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
@@ -380,7 +374,7 @@
                     });
                     items = extractItems(res);
                 } else if (activeCategory === 'drakor') {
-                    const res = await apiFetch(`/viu/search?q=${encodeURIComponent(query)}&page=1&limit=16`);
+                    const res = await apiFetch(`/iqiyi/search?q=${encodeURIComponent(query)}`);
                     items = extractItems(res);
                 }
                 renderGrid(items);
@@ -415,14 +409,11 @@
             synopEl.innerText = item.deskripsi || item.synopsis || item.description || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
             let episodes = item.episodes || item.episode_list || [];
-            if (activeCategory === 'drakor' && (item.series_id || item.id)) {
+            if (activeCategory === 'drakor' && item.pathplay) {
                 try {
-                    const sId = item.series_id || item.id;
-                    const detailRes = await apiFetch(`/viu/detail?series_id=${sId}`);
+                    const detailRes = await apiFetch(`/iqiyi/detail?pathplay=${item.pathplay}&lang=id_id`);
                     const detailData = detailRes.data || detailRes;
-                    if (detailData && (detailData.episodes || detailData.list)) {
-                        episodes = detailData.episodes || detailData.list;
-                    }
+                    if (detailData && detailData.episodes) episodes = detailData.episodes;
                 } catch (err) {}
             }
 
@@ -445,9 +436,9 @@
             if (!ep) return;
 
             let url = ep.stream_url || ep.url || ep.embed_url;
-            if (!url && ep.product_id) {
+            if (!url && ep.slug) {
                 try {
-                    const playRes = await apiFetch(`/viu/play?product_id=${ep.product_id}&lang=id`);
+                    const playRes = await apiFetch(`/iqiyi/play?slug=${ep.slug}&lang=id_id`);
                     const playData = playRes.data || playRes;
                     url = playData.stream_url || playData.url || playData.embed_url;
                 } catch (e) {}

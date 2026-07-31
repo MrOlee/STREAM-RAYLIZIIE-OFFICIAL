@@ -197,6 +197,7 @@
                 }
 
                 const json = await response.json();
+                console.log(`API Response [${endpoint}]:`, json);
                 showLoading(false);
                 return json;
             } catch (err) {
@@ -216,7 +217,8 @@
             if (Array.isArray(res.result)) return res.result;
             if (res.result && Array.isArray(res.result.list)) return res.result.list;
             if (Array.isArray(res.list)) return res.list;
-            // Handle nested objects / arrays recursively if needed
+            
+            // Deep search for any array in response object
             for (let key in res) {
                 if (Array.isArray(res[key])) return res[key];
                 if (res[key] && typeof res[key] === 'object') {
@@ -313,8 +315,13 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/viu/home?country=ID&lang=id');
-                renderGrid(extractItems(res));
+                let res = await apiFetch('/vidio/series?page=1&size=20');
+                let items = extractItems(res);
+                if (!items.length) {
+                    res = await apiFetch('/viu/home?country=ID&lang=id');
+                    items = extractItems(res);
+                }
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }
@@ -368,7 +375,7 @@
                     });
                     items = extractItems(res);
                 } else if (activeCategory === 'drakor') {
-                    const res = await apiFetch(`/viu/search?q=${encodeURIComponent(query)}&page=1&limit=16`);
+                    const res = await apiFetch(`/vidio/search?q=${encodeURIComponent(query)}`);
                     items = extractItems(res);
                 }
                 renderGrid(items);
@@ -403,14 +410,12 @@
             synopEl.innerText = item.deskripsi || item.synopsis || item.description || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
             let episodes = item.episodes || item.episode_list || [];
-            if (activeCategory === 'drakor' && (item.series_id || item.id)) {
+            if (activeCategory === 'drakor' && (item.id || item.series_id)) {
                 try {
-                    const sId = item.series_id || item.id;
-                    const detailRes = await apiFetch(`/viu/detail?series_id=${sId}`);
+                    const contentId = item.id || item.series_id;
+                    const detailRes = await apiFetch(`/vidio/detail?id=${contentId}&type=content_profile`);
                     const detailData = detailRes.data || detailRes;
-                    if (detailData && (detailData.episodes || detailData.list)) {
-                        episodes = detailData.episodes || detailData.list;
-                    }
+                    if (detailData && detailData.episodes) episodes = detailData.episodes;
                 } catch (err) {}
             }
 
@@ -433,9 +438,9 @@
             if (!ep) return;
 
             let url = ep.stream_url || ep.url || ep.embed_url;
-            if (!url && ep.product_id) {
+            if (!url && ep.id) {
                 try {
-                    const playRes = await apiFetch(`/viu/play?product_id=${ep.product_id}&lang=id`);
+                    const playRes = await apiFetch(`/vidio/play?id=${ep.id}&type=video`);
                     const playData = playRes.data || playRes;
                     url = playData.stream_url || playData.url || playData.embed_url;
                 } catch (e) {}

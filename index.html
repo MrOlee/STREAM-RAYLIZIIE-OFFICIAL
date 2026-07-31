@@ -248,7 +248,7 @@
         let fullAnimeList = [];
         let rawScheduleData = [];
 
-        // Global Anime Cache
+        // Global Cache untuk objek anime
         window.animeCache = {};
 
         const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
@@ -257,27 +257,6 @@
             const key = 'item_' + Math.random().toString(36).substring(2, 11);
             window.animeCache[key] = item;
             return key;
-        }
-
-        function getAnimeSlug(item) {
-            if (!item) return '';
-            let raw = item.id || item.slug || item.endpoint || item.anime_id || item.param || item.url || item.link;
-            
-            if (raw) {
-                // Ekstrak bagian akhir path jika berupa URL/path
-                raw = String(raw).replace(/\/$/, '').split('/').pop();
-                return raw;
-            }
-
-            // Fallback: ubah judul menjadi slug (kebab-case)
-            if (item.title) {
-                return item.title
-                    .toLowerCase()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .trim()
-                    .replace(/\s+/g, '-');
-            }
-            return '';
         }
 
         // Generic API Fetcher
@@ -593,6 +572,8 @@
 
         // --- MODAL STREAMING & DETAIL LOGIC ---
         async function openAnimeDetail(item) {
+            console.log("Anime Item Selected:", item); // Cek properti di DevTools Console
+
             const modal = document.getElementById('detail-modal');
             const placeholder = document.getElementById('player-placeholder');
             const iframe = document.getElementById('video-iframe');
@@ -602,7 +583,17 @@
             const epListEl = document.getElementById('episode-list');
 
             const animeTitle = item.title || 'Detail Anime';
-            const slug = getAnimeSlug(item);
+
+            // Kumpulkan nilai target dari properti yang tersedia tanpa manipulasi string
+            const rawTargets = [
+                item.endpoint, item.url, item.link, item.id, item.slug, item.param, item.anime_id
+            ].filter(Boolean);
+
+            // Tambahkan versi slug sederhana dari judul sebagai cadangan terakhir
+            if (item.title) {
+                const generatedSlug = item.title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+                rawTargets.push(generatedSlug);
+            }
 
             // Reset Modal View
             modal.classList.remove('hidden');
@@ -616,60 +607,67 @@
             synopEl.innerText = 'Mengambil sinopsis dan daftar episode...';
             epListEl.innerHTML = '<div class="text-xs text-gray-500">Memuat episode...</div>';
 
-            try {
-                // Cobalah panggil endpoint detail dengan slug
-                let res = null;
-                try {
-                    res = await apiFetch(`/detail?id=${encodeURIComponent(slug)}`);
-                } catch(err1) {
-                    // Fallback query parameter
+            let res = null;
+            const paramKeys = ['endpoint', 'url', 'id', 'path', 'param', 'slug'];
+
+            // Loop uji coba otomatis kombinasi target dan query parameter
+            searchLoop:
+            for (const targetVal of rawTargets) {
+                for (const key of paramKeys) {
                     try {
-                        res = await apiFetch(`/detail?endpoint=${encodeURIComponent(slug)}`);
-                    } catch(err2) {
-                        res = await apiFetch(`/detail?slug=${encodeURIComponent(slug)}`);
+                        const testUrl = `/detail?${key}=${encodeURIComponent(targetVal)}`;
+                        const testRes = await apiFetch(testUrl);
+                        if (testRes && (testRes.code === 0 || testRes.data || testRes.title || testRes.episodes)) {
+                            res = testRes;
+                            console.log(`Berhasil terhubung menggunakan parameter: ?${key}=${targetVal}`);
+                            break searchLoop;
+                        }
+                    } catch (e) {
+                        // Lanjut mencoba kombinasi berikutnya jika status 400/error
                     }
                 }
+            }
 
-                const detail = res ? (res.data || res) : null;
+            const detail = res ? (res.data || res) : null;
 
-                if (detail) {
-                    titleEl.innerText = detail.title || animeTitle;
-                    synopEl.innerText = detail.synopsis || detail.deskripsi || item.deskripsi || 'Tidak ada deskripsi sinopsis.';
-                    
-                    metaEl.innerHTML = `
-                        ${detail.status || item.status ? `<span class="bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-700/50">${detail.status || item.status}</span>` : ''}
-                        ${detail.rating ? `<span class="bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-amber-700/50"><i class="fa-solid fa-star mr-1"></i>${detail.rating}</span>` : ''}
-                        ${detail.genres ? detail.genres.map(g => `<span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">${g}</span>`).join('') : ''}
-                    `;
+            if (detail) {
+                titleEl.innerText = detail.title || animeTitle;
+                synopEl.innerText = detail.synopsis || detail.deskripsi || item.deskripsi || 'Tidak ada deskripsi sinopsis.';
+                
+                metaEl.innerHTML = `
+                    ${detail.status || item.status ? `<span class="bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-700/50">${detail.status || item.status}</span>` : ''}
+                    ${detail.rating ? `<span class="bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-amber-700/50"><i class="fa-solid fa-star mr-1"></i>${detail.rating}</span>` : ''}
+                    ${detail.genres ? detail.genres.map(g => `<span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">${g}</span>`).join('') : ''}
+                `;
 
-                    // Handle Episode List
-                    const episodes = detail.episodes || detail.episode_list || [];
-                    if (episodes.length > 0) {
-                        epListEl.innerHTML = episodes.map((ep, idx) => {
-                            const streamTarget = ep.stream_url || ep.url || ep.id || ep.endpoint;
-                            const epKey = storeAnime({ url: streamTarget });
-                            return `
-                            <button onclick="playEpisodeFromCache('${epKey}')" 
-                                    class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
-                                <i class="fa-solid fa-play text-[10px]"></i> Episode ${ep.episode || ep.title || (idx + 1)}
-                            </button>
-                        `}).join('');
+                // Handle Episode List
+                const episodes = detail.episodes || detail.episode_list || [];
+                if (episodes.length > 0) {
+                    epListEl.innerHTML = episodes.map((ep, idx) => {
+                        const streamTarget = ep.stream_url || ep.url || ep.id || ep.endpoint;
+                        const epKey = storeAnime({ url: streamTarget });
+                        return `
+                        <button onclick="playEpisodeFromCache('${epKey}')" 
+                                class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
+                            <i class="fa-solid fa-play text-[10px]"></i> Episode ${ep.episode || ep.title || (idx + 1)}
+                        </button>
+                    `}).join('');
 
-                        // Auto play episode 1
-                        const firstEp = episodes[0];
-                        playEpisode(firstEp.stream_url || firstEp.url || firstEp.id || firstEp.endpoint);
-                    } else if (detail.stream_url || detail.embed_url) {
-                        playEpisode(detail.stream_url || detail.embed_url);
-                        epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
-                    } else {
-                        epListEl.innerHTML = `<span class="text-xs text-gray-500">Belum ada link episode yang tersedia.</span>`;
-                        placeholder.innerHTML = `<p class="text-xs text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sumber pemutar video tidak ditemukan.</p>`;
-                    }
+                    // Auto-play episode 1
+                    const firstEp = episodes[0];
+                    playEpisode(firstEp.stream_url || firstEp.url || firstEp.id || firstEp.endpoint);
+                } else if (detail.stream_url || detail.embed_url) {
+                    playEpisode(detail.stream_url || detail.embed_url);
+                    epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
+                } else {
+                    epListEl.innerHTML = `<span class="text-xs text-gray-500">Belum ada link episode yang tersedia.</span>`;
+                    placeholder.innerHTML = `<p class="text-xs text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sumber pemutar video tidak ditemukan.</p>`;
                 }
-            } catch (err) {
-                console.error("Gagal memuat detail:", err);
-                synopEl.innerText = "Gagal memuat detail anime dari server.";
-                placeholder.innerHTML = `<p class="text-xs text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal memuat pemutar video.</p>`;
+            } else {
+                // Fallback jika API detail tidak merespons
+                synopEl.innerText = item.deskripsi || "Gagal memuat detail anime dari server.";
+                epListEl.innerHTML = `<span class="text-xs text-gray-500">Gagal mengambil daftar episode.</span>`;
+                placeholder.innerHTML = `<p class="text-xs text-red-400"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal memuat pemutar video (HTTP 400).</p>`;
             }
         }
 

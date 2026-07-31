@@ -1,0 +1,33 @@
+/* Sembunyikan Scrollbar tetapi tetap bisa di-scroll */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Kustomisasi Kartu Konten */
+.media-card {
+    min-width: 160px;
+    width: 160px;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    .media-card {
+        min-width: 200px;
+        width: 200px;
+    }
+}
+
+.media-card:hover {
+    transform: scale(1.08);
+    z-index: 30;
+}
+
+/* Transisi Navbar saat di-scroll */
+.nav-scrolled {
+    background-color: #141414 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}

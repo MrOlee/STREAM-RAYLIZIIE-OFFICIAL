@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STREAM RAYLIZIIE OFFICIAL</title>
   
-  <!-- Tailwind CSS Compiled (Produksi Aman - Bebas Warning Console) -->
+  <!-- Tailwind CSS Compiled -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   
   <style>
@@ -43,7 +43,7 @@
         FEATURED
       </span>
       <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight">
-        Kuroiwa Medaka ni Watashi no Kawaii ga Tsuujinai
+        Memuat Konten...
       </h1>
       <p class="text-gray-400 text-sm mt-3">
         Saksikan penayangan lengkapnya secara gratis di STREAM RAYLIZIIE OFFICIAL.
@@ -62,16 +62,40 @@
 
   <!-- MAIN CONTENT CONTAINER -->
   <main class="px-6 py-8 space-y-10">
+    
+    <!-- ANIME SECTION -->
     <section>
       <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
         <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
         <span>Anime Terbaru & Trending</span>
       </h2>
-      
       <div id="animeContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat tayangan...</p>
+        <p class="text-gray-500 text-sm">Memuat anime...</p>
       </div>
     </section>
+
+    <!-- DRAKOR SECTION -->
+    <section>
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span>
+        <span>Drama Korea & Asia</span>
+      </h2>
+      <div id="drakorContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Konten drakor akan segera hadir.</p>
+      </div>
+    </section>
+
+    <!-- FILM SECTION -->
+    <section>
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+        <span>Bioskop & Film</span>
+      </h2>
+      <div id="filmContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Konten film akan segera hadir.</p>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL STREAM PLAYER VIDEO -->
@@ -92,7 +116,6 @@
     const API_BASE_URL = 'https://api-rayliziie.rayyan-official.site';
     const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
 
-    // Pembersih otomatis jika API mengirim via.placeholder.com yang mati
     function fixImageUrl(url) {
       if (!url || url.includes('via.placeholder.com')) {
         return SAFE_PLACEHOLDER;
@@ -102,7 +125,7 @@
 
     async function openPlayerModal(itemId) {
       if (!itemId || itemId === 'undefined' || itemId.trim() === '') {
-        alert('Maaf, ID tayangan ini tidak valid atau belum tersedia.');
+        alert('Maaf, ID tayangan ini tidak valid.');
         return;
       }
 
@@ -138,10 +161,10 @@
       modal.classList.add('hidden');
     }
 
-    function createAnimeCard(item) {
+    function createCard(item) {
       const validId = item.id || item.path || item.slug;
       const coverUrl = fixImageUrl(item.cover_url || item.poster || item.image);
-      const title = item.title || 'Untitled Anime';
+      const title = item.title || 'Untitled';
 
       return `
         <div 
@@ -166,30 +189,74 @@
       `;
     }
 
-    async function fetchHomeData() {
+    // 1. FETCH ANIME (ISOLATED & SAFE)
+    async function fetchAnime() {
       const container = document.getElementById('animeContainer');
-      
       try {
-        const response = await fetch(`${API_BASE_URL}/animekompi/home`);
-        const json = await response.json();
+        const res = await fetch(`${API_BASE_URL}/animekompi/home`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
 
         if (json.code === 0 && json.data && json.data.length > 0) {
-          container.innerHTML = json.data.map(item => createAnimeCard(item)).join('');
-
-          const firstItem = json.data[0];
-          const featuredId = firstItem.id || firstItem.path;
-          document.getElementById('featuredTitle').innerText = firstItem.title;
-          document.getElementById('btnTontonFeatured').onclick = () => openPlayerModal(featuredId);
+          container.innerHTML = json.data.map(item => createCard(item)).join('');
+          
+          // Set Featured Header
+          const first = json.data[0];
+          document.getElementById('featuredTitle').innerText = first.title;
+          document.getElementById('btnTontonFeatured').onclick = () => openPlayerModal(first.id || first.path);
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada tayangan ditemukan.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada data anime.</p>`;
         }
-      } catch (error) {
-        console.error('Fetch error:', error);
-        container.innerHTML = `<p class="text-red-400 text-sm">Gagal menghubungkan ke server API.</p>`;
+      } catch (err) {
+        console.error('Anime Fetch Error:', err);
+        container.innerHTML = `<p class="text-red-400 text-sm">Gagal memuat anime.</p>`;
       }
     }
 
-    document.addEventListener('DOMContentLoaded', fetchHomeData);
+    // 2. FETCH DRAKOR (HANDLES 404 SILENTLY)
+    async function fetchDrakor() {
+      const container = document.getElementById('drakorContainer');
+      try {
+        const res = await fetch(`${API_BASE_URL}/dramovnime/tab`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        if (json.code === 0 && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(item => createCard(item)).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor belum tersedia.</p>`;
+        }
+      } catch (err) {
+        // Jangan menghentikan aplikasi jika 404
+        container.innerHTML = `<p class="text-gray-500 text-sm">Segera hadir.</p>`;
+      }
+    }
+
+    // 3. FETCH FILM (HANDLES 404 SILENTLY)
+    async function fetchFilm() {
+      const container = document.getElementById('filmContainer');
+      try {
+        const res = await fetch(`${API_BASE_URL}/filmbox/home`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+
+        if (json.code === 0 && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(item => createCard(item)).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Film belum tersedia.</p>`;
+        }
+      } catch (err) {
+        // Jangan menghentikan aplikasi jika 404
+        container.innerHTML = `<p class="text-gray-500 text-sm">Segera hadir.</p>`;
+      }
+    }
+
+    // Jalankan semua fetch secara mandiri
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchAnime();
+      fetchDrakor();
+      fetchFilm();
+    });
   </script>
 </body>
 </html>

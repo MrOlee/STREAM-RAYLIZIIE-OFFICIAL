@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Rayliziie Official - Anime, Films & Drakor</title>
+    <title>Stream Rayliziie Official - Anime, Films & Drakor Hub</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -53,7 +53,7 @@
             <!-- Status Indicator -->
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Proxy Connected
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Multi-API Connected
                 </span>
             </div>
         </div>
@@ -75,7 +75,7 @@
     <!-- Main Content Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        <!-- Banner / Header Info -->
+        <!-- Banner / Header Info & Search -->
         <div class="bg-gradient-to-r from-red-950/50 via-gray-900 to-gray-900 border border-gray-800 p-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
             <div>
                 <span id="banner-badge" class="bg-red-600 text-xs font-bold px-2.5 py-1 rounded uppercase text-white shadow">Kategori: Anime</span>
@@ -153,7 +153,7 @@
 
                 <div>
                     <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-list text-red-400"></i> Sumber / Opsi Putar
+                        <i class="fa-solid fa-list text-red-400"></i> Episode / Opsi Putar
                     </h3>
                     <div id="episode-list" class="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1"></div>
                 </div>
@@ -287,8 +287,7 @@
                     method: 'POST',
                     body: JSON.stringify({ channelId: "2", page: "1", perPage: "20", sort: "ForYou", genre: "All", country: "All" })
                 });
-                const items = extractItems(res);
-                renderGrid(items);
+                renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
             }
@@ -297,8 +296,7 @@
         async function loadFilmsContent() {
             try {
                 const res = await apiFetch('/filmbox/trending?page=0&perPage=20');
-                const items = extractItems(res);
-                renderGrid(items);
+                renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
             }
@@ -307,8 +305,7 @@
         async function loadDrakorContent() {
             try {
                 const res = await apiFetch('/iqiyi/trending');
-                const items = extractItems(res);
-                renderGrid(items);
+                renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
             }
@@ -350,19 +347,12 @@
             try {
                 let items = [];
                 if (activeCategory === 'anime') {
-                    const cached = window.mediaCache || {};
-                    items = Object.values(cached).filter(item => {
-                        const t = (item.title || item.name || '').toLowerCase();
-                        return t.includes(query.toLowerCase());
+                    const res = await apiFetch('/dramovnime/list', {
+                        method: 'POST',
+                        body: JSON.stringify({ channelId: "2", page: "1", perPage: "50", sort: "ForYou", genre: "All", country: "All" })
                     });
-                    if (items.length === 0) {
-                        const listRes = await apiFetch('/dramovnime/list', {
-                            method: 'POST',
-                            body: JSON.stringify({ channelId: "2", page: "1", perPage: "50", sort: "ForYou", genre: "All", country: "All" })
-                        });
-                        const allItems = extractItems(listRes);
-                        items = allItems.filter(i => (i.title || i.name || '').toLowerCase().includes(query.toLowerCase()));
-                    }
+                    const allItems = extractItems(res);
+                    items = allItems.filter(i => (i.title || i.name || '').toLowerCase().includes(query.toLowerCase()));
                 } else if (activeCategory === 'films') {
                     const res = await apiFetch(`/filmbox/search`, {
                         method: 'POST',
@@ -404,12 +394,43 @@
             metaEl.innerHTML = `<span class="bg-gray-800 px-2 py-0.5 rounded text-[10px]">Streaming Ready</span>`;
             synopEl.innerText = item.deskripsi || item.synopsis || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
-            const streamUrl = item.stream_url || item.url || item.embed_url || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
-            epListEl.innerHTML = `<button onclick="playMedia('${streamUrl}')" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow"><i class="fa-solid fa-play text-[10px]"></i> Putar Video Utama</button>`;
+            // Handle episodes or default streaming
+            let episodes = item.episodes || item.episode_list || [];
+            if (activeCategory === 'drakor' && item.pathplay) {
+                try {
+                    const detailRes = await apiFetch(`/iqiyi/detail?pathplay=${item.pathplay}&lang=id_id`);
+                    const detailData = detailRes.data || detailRes;
+                    if (detailData && detailData.episodes) episodes = detailData.episodes;
+                } catch (err) {}
+            }
 
-            placeholder.classList.add('hidden');
-            iframe.classList.remove('hidden');
-            iframe.src = streamUrl;
+            if (episodes.length > 0) {
+                epListEl.innerHTML = episodes.map((ep, idx) => {
+                    const epName = ep.title || ep.name || `Episode ${idx + 1}`;
+                    const epKey = storeItem(ep);
+                    return `<button onclick="playEpisodeItem('${epKey}')" class="px-3 py-1.5 bg-gray-800 hover:bg-red-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 shadow"><i class="fa-solid fa-play text-[10px]"></i> ${epName}</button>`;
+                }).join('');
+                playEpisodeItem(storeItem(episodes[0]));
+            } else {
+                const streamUrl = item.stream_url || item.url || item.embed_url || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+                epListEl.innerHTML = `<button onclick="playMedia('${streamUrl}')" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold flex items-center gap-1.5 shadow"><i class="fa-solid fa-play text-[10px]"></i> Putar Video Utama</button>`;
+                playMedia(streamUrl);
+            }
+        }
+
+        async function playEpisodeItem(cacheKey) {
+            const ep = window.mediaCache[cacheKey];
+            if (!ep) return;
+
+            let url = ep.stream_url || ep.url || ep.embed_url;
+            if (!url && ep.slug) {
+                try {
+                    const playRes = await apiFetch(`/iqiyi/play?slug=${ep.slug}&lang=id_id`);
+                    const playData = playRes.data || playRes;
+                    url = playData.stream_url || playData.url || playData.embed_url;
+                } catch (e) {}
+            }
+            if (url) playMedia(url);
         }
 
         function playMedia(url) {

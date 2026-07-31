@@ -244,7 +244,6 @@
             return '';
         }
 
-        // Pindai objek JSON untuk mencari URL streaming eksternal (https://)
         function findStreamUrl(obj) {
             if (!obj) return null;
             
@@ -351,7 +350,6 @@
             else if (tabName === 'list') loadAnimeList();
         }
 
-        // --- TAB 1: HOME LOGIC ---
         async function loadHomeData() {
             try {
                 const res = await apiFetch('/home?page=1');
@@ -409,7 +407,6 @@
             `}).join('');
         }
 
-        // --- TAB 2: SCHEDULE LOGIC ---
         async function loadScheduleData() {
             try {
                 const res = await apiFetch('/schedule');
@@ -463,7 +460,6 @@
             `}).join('');
         }
 
-        // --- TAB 3: GENRE LOGIC ---
         async function loadGenresList() {
             document.getElementById('genre-list').classList.remove('hidden');
             document.getElementById('genre-detail-container').classList.add('hidden');
@@ -512,7 +508,6 @@
             } catch (e) { console.error(e); }
         }
 
-        // --- TAB 4: LIST LOGIC ---
         async function loadAnimeList() {
             try {
                 const res = await apiFetch('/list');
@@ -597,7 +592,6 @@
             }
         }
 
-        // --- MODAL STREAMING & DETAIL LOGIC ---
         async function openAnimeDetail(item) {
             const modal = document.getElementById('detail-modal');
             const placeholder = document.getElementById('player-placeholder');
@@ -692,7 +686,6 @@
             }
         }
 
-        // --- PEMUTAR VIDEO HANDLER (RESOLUSI SLUG KE /detail) ---
         async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
@@ -706,6 +699,16 @@
                 <p class="text-xs text-gray-400 animate-pulse">Memuat pemutar video...</p>
             `;
 
+            if (typeof targetInput === 'object') {
+                const directUrl = findStreamUrl(targetInput);
+                if (directUrl) {
+                    placeholder.classList.add('hidden');
+                    iframe.classList.remove('hidden');
+                    iframe.src = directUrl;
+                    return;
+                }
+            }
+
             let targetStr = getEpTarget(targetInput);
             if (!targetStr && typeof targetInput === 'object') {
                 targetStr = targetInput.path || targetInput.endpoint || targetInput.url || targetInput.link || targetInput.slug || '';
@@ -716,7 +719,6 @@
                 return;
             }
 
-            // 1. Jika sudah berupa URL eksternal langsung (http/https)
             if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
@@ -724,23 +726,26 @@
                 return;
             }
 
-            // 2. Jika berupa path/slug episode, minta data stream/embed ke server proxy menggunakan endpoint /detail
             let resolvedUrl = null;
-            try {
-                const res = await apiFetch(`/detail?path=${encodeURIComponent(targetStr)}`, true);
-                if (res) {
-                    resolvedUrl = findStreamUrl(res);
-                }
-            } catch (e) {}
+            const possibleEndpoints = ['/streaming', '/episode', '/watch', '/detail'];
+
+            for (const epEndpoint of possibleEndpoints) {
+                try {
+                    const res = await apiFetch(`${epEndpoint}?path=${encodeURIComponent(targetStr)}`, true);
+                    if (res) {
+                        resolvedUrl = findStreamUrl(res);
+                        if (resolvedUrl) break;
+                    }
+                } catch (e) {}
+            }
 
             if (resolvedUrl) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
                 iframe.src = resolvedUrl;
             } else {
-                placeholder.classList.remove('hidden');
+                placeholder.classList.add('hidden');
                 iframe.classList.add('hidden');
-                iframe.src = '';
                 placeholder.innerHTML = `
                     <div class="p-4 text-center max-w-md mx-auto">
                         <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>

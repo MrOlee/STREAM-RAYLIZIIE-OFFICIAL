@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STREAM RAYLIZIIE OFFICIAL</title>
   
-  <!-- Tailwind CSS Compiled -->
+  <!-- Tailwind CSS Compiled (Produksi Aman - Bebas Warning Console) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   
   <style>
@@ -90,7 +90,15 @@
   <!-- JAVASCRIPT LOGIC -->
   <script>
     const API_BASE_URL = 'https://api-rayliziie.rayyan-official.site';
-    const FALLBACK_IMAGE = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
+    const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
+
+    // Pembersih otomatis jika API mengirim via.placeholder.com yang mati
+    function fixImageUrl(url) {
+      if (!url || url.includes('via.placeholder.com')) {
+        return SAFE_PLACEHOLDER;
+      }
+      return url;
+    }
 
     async function openPlayerModal(itemId) {
       if (!itemId || itemId === 'undefined' || itemId.trim() === '') {
@@ -132,7 +140,7 @@
 
     function createAnimeCard(item) {
       const validId = item.id || item.path || item.slug;
-      const coverUrl = item.cover_url || item.poster || FALLBACK_IMAGE;
+      const coverUrl = fixImageUrl(item.cover_url || item.poster || item.image);
       const title = item.title || 'Untitled Anime';
 
       return `
@@ -145,7 +153,7 @@
               src="${coverUrl}" 
               alt="${title}"
               loading="lazy"
-              onerror="this.onerror=null; this.src='${FALLBACK_IMAGE}';"
+              onerror="this.onerror=null; this.src='${SAFE_PLACEHOLDER}';"
               class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
             />
           </div>

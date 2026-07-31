@@ -220,31 +220,7 @@
             return key;
         }
 
-        function getEpTarget(ep) {
-            if (!ep) return '';
-            if (typeof ep === 'string') return ep.trim();
-            
-            const keys = [
-                'path', 'endpoint', 'episode_endpoint', 'url', 'link', 'id', 'slug', 
-                'stream_url', 'embed_url', 'href', 'episode_id', 'episode_slug', 
-                'target', 'param', 'value', 'key'
-            ];
-            
-            for (const k of keys) {
-                if (ep[k] && typeof ep[k] === 'string' && ep[k].trim() !== '') {
-                    return ep[k].trim();
-                }
-            }
-            
-            for (const [key, val] of Object.entries(ep)) {
-                if (typeof val === 'string' && val.trim() !== '' && !['title', 'name', 'episode', 'number', 'status', 'date'].includes(key.toLowerCase())) {
-                    return val.trim();
-                }
-            }
-            return '';
-        }
-
-        // Deep Search untuk Ekstraksi Link Streaming (mencari URL https://)
+        // Pindai objek JSON untuk mencari URL streaming eksternal (https://)
         function findStreamUrl(obj) {
             if (!obj) return null;
             
@@ -692,78 +668,34 @@
             }
         }
 
-        // --- PEMUTAR VIDEO HANDLER (TANPA 502 BAD GATEWAY) ---
+        // --- PEMUTAR VIDEO HANDLER (LANGSUNG MEMBACA URL DARI OBJEK EPISODE) ---
         async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
-            let targetStr = getEpTarget(targetInput);
-
-            if (!targetStr && typeof targetInput === 'object' && targetInput !== null) {
-                const fallbackTitle = targetInput.title || targetInput.name || '';
-                if (fallbackTitle) {
-                    targetStr = fallbackTitle.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
-                }
-            }
-
             placeholder.classList.remove('hidden');
             iframe.classList.add('hidden');
             iframe.src = '';
-
-            if (!targetStr) {
-                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Target episode tidak valid.</p>`;
-                return;
-            }
 
             placeholder.innerHTML = `
                 <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                 <p class="text-xs text-gray-400 animate-pulse">Menghubungkan pemutar video...</p>
             `;
 
-            // 1. Jika sudah berupa URL eksternal langsung (http/https)
-            if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
-                placeholder.classList.add('hidden');
-                iframe.classList.remove('hidden');
-                iframe.src = targetStr;
-                return;
-            }
+            // Cari link stream / embed yang sudah melekat langsung di dalam objek episode
+            let resolvedUrl = findStreamUrl(targetInput);
 
-            // 2. Pencarian Melalui Endpoint Episode API Proxy Vercel
-            // PERHATIAN: Endpoint /detail sengaja DIHAPUS dari daftar ini agar tidak memicu error 502 Bad Gateway
-            const streamEndpoints = ['/episode', '/eps', '/stream', '/watch', '/video', '/get-episode'];
-            const streamParamKeys = ['path', 'endpoint', 'id', 'slug', 'param'];
-            let resolvedUrl = null;
-
-            streamSearchLoop:
-            for (const epPath of streamEndpoints) {
-                for (const pKey of streamParamKeys) {
-                    try {
-                        const testUrl = `${epPath}?${pKey}=${encodeURIComponent(targetStr)}`;
-                        const res = await apiFetch(testUrl, true);
-                        
-                        // Validasi agar memastikan error 502/404 diabaikan
-                        if (res && res.code !== 502 && res.code !== 404 && res.code !== 500) {
-                            if (res.htmlText) {
-                                const match = res.htmlText.match(/<iframe[^>]+src=["']([^"']+)["']/i);
-                                if (match && match[1]) {
-                                    resolvedUrl = match[1];
-                                    break streamSearchLoop;
-                                }
-                            } else {
-                                const foundUrl = findStreamUrl(res);
-                                if (foundUrl) {
-                                    resolvedUrl = foundUrl;
-                                    break streamSearchLoop;
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        // Secara diam-diam mengabaikan error (misal endpoint tidak ada) dan lanjut coba endpoint selanjutnya
+            // Jika tidak ditemukan langsung, coba ekstrak path lalu cek apakah ada properti link di dalam objek
+            if (!resolvedUrl && typeof targetInput === 'object') {
+                const possibleKeys = ['url', 'link', 'endpoint', 'path', 'stream_url', 'embed_url', 'iframe'];
+                for (const k of possibleKeys) {
+                    if (targetInput[k] && typeof targetInput[k] === 'string' && targetInput[k].startsWith('http')) {
+                        resolvedUrl = targetInput[k];
+                        break;
                     }
                 }
             }
 
-            // 3. Pasang sumber URL jika ditemukan, atau tampilkan pesan error yang jelas
             if (resolvedUrl) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
@@ -774,9 +706,9 @@
                 iframe.src = '';
                 placeholder.innerHTML = `
                     <div class="p-4 text-center max-w-md mx-auto">
-                        <i class="fa-solid fa-circle-exclamation text-red-500 text-3xl mb-3"></i>
-                        <p class="text-sm font-bold text-gray-200 mb-1">Gagal Menghubungi Backend Episode</p>
-                        <p class="text-[11px] text-gray-400">Pastikan API Vercel (<i>api-proxy</i>) kamu memiliki file route yang khusus menangani pencarian link episode (misalnya <code class="bg-gray-800 text-pink-400 px-1 rounded">/api-proxy/episode</code>) yang aktif dan mengembalikan JSON link video.</p>
+                        <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>
+                        <p class="text-xs font-semibold text-gray-200 mb-1">Link pemutar video belum tersedia pada data episode ini.</p>
+                        <p class="text-[11px] text-gray-400">Pastikan backend API mengirimkan properti URL/Embed pada list episode.</p>
                     </div>
                 `;
             }

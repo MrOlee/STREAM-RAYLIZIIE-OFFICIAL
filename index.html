@@ -250,6 +250,12 @@
 
         const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
 
+        // Safe String Sanitizer for Onclick Event Handlers
+        function cleanStr(str) {
+            if (!str) return '';
+            return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        }
+
         // Generic API Fetcher
         async function apiFetch(endpoint) {
             showLoading(true);
@@ -330,9 +336,9 @@
         function renderSliders(sliders) {
             const container = document.getElementById('slider-container');
             container.innerHTML = sliders.slice(0, 4).map(item => {
-                const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                const animeId = item.id || item.slug || item.endpoint || item.title;
                 return `
-                <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col sm:flex-row h-auto sm:h-48 group hover:border-indigo-500/50 transition-all cursor-pointer">
                     <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full sm:w-36 h-48 sm:h-full object-cover">
                     <div class="p-4 flex flex-col justify-between flex-1">
@@ -357,9 +363,9 @@
         function renderAnimeGrid(elementId, items, isTrending = false) {
             const grid = document.getElementById(elementId);
             grid.innerHTML = items.map(item => {
-                const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                const animeId = item.id || item.slug || item.endpoint || item.title;
                 return `
-                <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer">
                     <div class="relative overflow-hidden aspect-[3/4]">
                         <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -409,9 +415,9 @@
             }
 
             grid.innerHTML = dayData.animes.map(item => {
-                const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                const animeId = item.id || item.slug || item.endpoint || item.title;
                 return `
-                <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all cursor-pointer">
                     <div class="relative overflow-hidden aspect-[3/4]">
                         <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
@@ -459,9 +465,9 @@
                 if (res.code === 0 && res.data && res.data.animes) {
                     const grid = document.getElementById('genre-anime-grid');
                     grid.innerHTML = res.data.animes.map(item => {
-                        const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                        const animeId = item.id || item.slug || item.endpoint || item.title;
                         return `
-                        <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                        <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                              class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all cursor-pointer">
                             <div class="relative overflow-hidden aspect-[3/4]">
                                 <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
@@ -512,9 +518,9 @@
             }
 
             container.innerHTML = groupObj.animes.map(item => {
-                const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                const animeId = item.id || item.slug || item.endpoint || item.title;
                 return `
-                <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                      class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-indigo-500 transition-all cursor-pointer group">
                     <span class="text-xs text-gray-200 font-medium truncate pr-2 group-hover:text-indigo-400">${item.title}</span>
                     <i class="fa-solid fa-play text-[10px] text-gray-600 group-hover:text-indigo-400"></i>
@@ -544,9 +550,9 @@
             }
 
             container.innerHTML = matches.slice(0, 60).map(item => {
-                const animeId = item.id || item.slug || encodeURIComponent(item.title);
+                const animeId = item.id || item.slug || item.endpoint || item.title;
                 return `
-                <div onclick="openAnimeDetail('${animeId}', '${encodeURIComponent(item.title)}')" 
+                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
                      class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-indigo-500 transition-all cursor-pointer group">
                     <span class="text-xs text-gray-200 font-medium truncate pr-2 group-hover:text-indigo-400">${item.title}</span>
                     <i class="fa-solid fa-play text-[10px] text-gray-600 group-hover:text-indigo-400"></i>
@@ -555,8 +561,7 @@
         }
 
         // --- MODAL STREAMING & DETAIL LOGIC ---
-        async function openAnimeDetail(animeId, encodedTitle) {
-            const decodedTitle = decodeURIComponent(encodedTitle);
+        async function openAnimeDetail(animeId, title) {
             const modal = document.getElementById('detail-modal');
             const placeholder = document.getElementById('player-placeholder');
             const iframe = document.getElementById('video-iframe');
@@ -572,18 +577,18 @@
             iframe.src = '';
             placeholder.classList.remove('hidden');
             
-            titleEl.innerText = decodedTitle;
+            titleEl.innerText = title;
             metaEl.innerHTML = `<span class="bg-gray-800 px-2 py-0.5 rounded text-[10px]">Memuat detail...</span>`;
             synopEl.innerText = 'Mengambil sinopsis dan daftar episode...';
             epListEl.innerHTML = '<div class="text-xs text-gray-500">Memuat episode...</div>';
 
             try {
-                // Call API Detail
+                // Call API Detail dengan Encode 1 Kali
                 const res = await apiFetch(`/detail?id=${encodeURIComponent(animeId)}`);
                 const detail = res.data || res;
 
                 if (detail) {
-                    titleEl.innerText = detail.title || decodedTitle;
+                    titleEl.innerText = detail.title || title;
                     synopEl.innerText = detail.synopsis || detail.deskripsi || 'Tidak ada deskripsi sinopsis.';
                     
                     metaEl.innerHTML = `
@@ -595,19 +600,20 @@
                     // Handle Episodes List
                     const episodes = detail.episodes || detail.episode_list || [];
                     if (episodes.length > 0) {
-                        epListEl.innerHTML = episodes.map((ep, idx) => `
-                            <button onclick="playEpisode('${ep.stream_url || ep.url || ep.id}', ${idx + 1})" 
+                        epListEl.innerHTML = episodes.map((ep, idx) => {
+                            const streamUrl = ep.stream_url || ep.url || ep.id;
+                            return `
+                            <button onclick="playEpisode('${cleanStr(streamUrl)}')" 
                                     class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
                                 <i class="fa-solid fa-play text-[10px]"></i> Episode ${ep.episode || ep.title || (idx + 1)}
                             </button>
-                        `).join('');
+                        `}).join('');
 
-                        // Auto play 1st Episode
+                        // Auto-play Episode Pertama
                         const firstEp = episodes[0];
-                        playEpisode(firstEp.stream_url || firstEp.url || firstEp.id, 1);
+                        playEpisode(firstEp.stream_url || firstEp.url || firstEp.id);
                     } else if (detail.stream_url || detail.embed_url) {
-                        // Direct Embed URL
-                        playEpisode(detail.stream_url || detail.embed_url, 1);
+                        playEpisode(detail.stream_url || detail.embed_url);
                         epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
                     } else {
                         epListEl.innerHTML = `<span class="text-xs text-gray-500">Belum ada link episode yang tersedia.</span>`;
@@ -621,16 +627,15 @@
             }
         }
 
-        function playEpisode(urlOrId, epNum) {
+        function playEpisode(urlOrId) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
             placeholder.classList.add('hidden');
             iframe.classList.remove('hidden');
 
-            // Check if string is direct embed URL or needs streaming endpoint
             let targetSrc = urlOrId;
-            if (!urlOrId.startsWith('http')) {
+            if (!urlOrId.startsWith('http://') && !urlOrId.startsWith('https://')) {
                 targetSrc = `${BASE_URL}/stream?id=${encodeURIComponent(urlOrId)}`;
             }
 

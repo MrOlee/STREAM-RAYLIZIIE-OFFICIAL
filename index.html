@@ -220,30 +220,6 @@
             return key;
         }
 
-        function getEpTarget(ep) {
-            if (!ep) return '';
-            if (typeof ep === 'string') return ep.trim();
-            
-            const keys = [
-                'path', 'endpoint', 'episode_endpoint', 'url', 'link', 'id', 'slug', 
-                'stream_url', 'embed_url', 'href', 'episode_id', 'episode_slug', 
-                'target', 'param', 'value', 'key'
-            ];
-            
-            for (const k of keys) {
-                if (ep[k] && typeof ep[k] === 'string' && ep[k].trim() !== '') {
-                    return ep[k].trim();
-                }
-            }
-            
-            for (const [key, val] of Object.entries(ep)) {
-                if (typeof val === 'string' && val.trim() !== '' && !['title', 'name', 'episode', 'number', 'status', 'date'].includes(key.toLowerCase())) {
-                    return val.trim();
-                }
-            }
-            return '';
-        }
-
         function findStreamUrl(obj) {
             if (!obj) return null;
             
@@ -699,61 +675,45 @@
                 <p class="text-xs text-gray-400 animate-pulse">Memuat pemutar video...</p>
             `;
 
-            if (typeof targetInput === 'object') {
-                const directUrl = findStreamUrl(targetInput);
-                if (directUrl) {
-                    placeholder.classList.add('hidden');
-                    iframe.classList.remove('hidden');
-                    iframe.src = directUrl;
-                    return;
+            const directUrl = findStreamUrl(targetInput);
+            if (directUrl) {
+                placeholder.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                iframe.src = directUrl;
+                return;
+            }
+
+            if (typeof targetInput === 'string' && (targetInput.startsWith('http://') || targetInput.startsWith('https://'))) {
+                placeholder.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                iframe.src = targetInput;
+                return;
+            }
+
+            if (typeof targetInput === 'object' && targetInput !== null) {
+                const possibleKeys = ['stream_url', 'embed_url', 'url', 'link', 'iframe', 'src', 'stream', 'file', 'slug', 'path'];
+                for (const key of possibleKeys) {
+                    if (targetInput[key] && typeof targetInput[key] === 'string') {
+                        const val = targetInput[key].trim();
+                        if (val.startsWith('http://') || val.startsWith('https://')) {
+                            placeholder.classList.add('hidden');
+                            iframe.classList.remove('hidden');
+                            iframe.src = val;
+                            return;
+                        }
+                    }
                 }
             }
 
-            let targetStr = getEpTarget(targetInput);
-            if (!targetStr && typeof targetInput === 'object') {
-                targetStr = targetInput.path || targetInput.endpoint || targetInput.url || targetInput.link || targetInput.slug || '';
-            }
-
-            if (!targetStr) {
-                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4">Target episode tidak valid.</p>`;
-                return;
-            }
-
-            if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
-                placeholder.classList.add('hidden');
-                iframe.classList.remove('hidden');
-                iframe.src = targetStr;
-                return;
-            }
-
-            let resolvedUrl = null;
-            const possibleEndpoints = ['/streaming', '/episode', '/watch', '/detail'];
-
-            for (const epEndpoint of possibleEndpoints) {
-                try {
-                    const res = await apiFetch(`${epEndpoint}?path=${encodeURIComponent(targetStr)}`, true);
-                    if (res) {
-                        resolvedUrl = findStreamUrl(res);
-                        if (resolvedUrl) break;
-                    }
-                } catch (e) {}
-            }
-
-            if (resolvedUrl) {
-                placeholder.classList.add('hidden');
-                iframe.classList.remove('hidden');
-                iframe.src = resolvedUrl;
-            } else {
-                placeholder.classList.add('hidden');
-                iframe.classList.add('hidden');
-                placeholder.innerHTML = `
-                    <div class="p-4 text-center max-w-md mx-auto">
-                        <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>
-                        <p class="text-xs font-semibold text-gray-200 mb-1">Gagal mengambil URL pemutar dari episode ini.</p>
-                        <p class="text-[11px] text-gray-400">Slug: ${targetStr}</p>
-                    </div>
-                `;
-            }
+            placeholder.classList.add('hidden');
+            iframe.classList.add('hidden');
+            placeholder.innerHTML = `
+                <div class="p-4 text-center max-w-md mx-auto">
+                    <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>
+                    <p class="text-xs font-semibold text-gray-200 mb-1">URL pemutar video tidak ditemukan pada data episode ini.</p>
+                    <p class="text-[11px] text-gray-400">Silakan periksa kembali struktur data API untuk episode ini.</p>
+                </div>
+            `;
         }
 
         function closeModal() {

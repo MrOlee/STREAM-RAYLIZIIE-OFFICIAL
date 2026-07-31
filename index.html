@@ -3,50 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STREAM RAYLIZIIE OFFICIAL</title>
+  <title>STREAM RAYLIZIIE OFFICIAL - Enterprise Gateway v10.0</title>
   
-  <!-- Tailwind CSS Compiled -->
+  <!-- Tailwind CSS Compiled (Aman Production & Bebas Warning Console) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   
   <style>
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .active-tab { border-bottom: 2px solid #f97316; color: #f97316; font-weight: bold; }
   </style>
 </head>
 <body class="bg-gray-950 text-white font-sans min-h-screen">
 
-  <!-- NAVBAR -->
-  <nav class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
-    <div class="flex items-center space-x-3">
-      <div class="bg-red-600 text-white p-2 rounded-lg font-bold text-xl tracking-wider">
-        STREAM
+  <!-- NAVBAR & CATEGORY NAVIGATION -->
+  <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
+    <div class="flex flex-wrap items-center justify-between px-6 py-4">
+      <div class="flex items-center space-x-3">
+        <div class="bg-red-600 text-white px-3 py-1 rounded-lg font-bold text-xl tracking-wider">
+          STREAM
+        </div>
+        <span class="text-sm font-semibold tracking-wide text-gray-300 hidden sm:inline">
+          RAYLIZIIE OFFICIAL <span class="text-xs text-orange-500 bg-orange-950 px-2 py-0.5 rounded border border-orange-800">v10.0 Gateway</span>
+        </span>
       </div>
-      <span class="text-sm font-semibold tracking-wide text-gray-300">RAYLIZIIE OFFICIAL</span>
+      
+      <!-- GLOBAL SEARCH BAR -->
+      <div class="relative w-full sm:w-80 mt-3 sm:mt-0">
+        <input 
+          type="text" 
+          id="searchInput"
+          placeholder="Cari anime, drakor, film, TV..." 
+          class="w-full bg-gray-800 text-sm text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
+        >
+        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
     </div>
-    
-    <div class="relative w-72">
-      <input 
-        type="text" 
-        placeholder="Cari tayangan..." 
-        class="w-full bg-gray-800 text-sm text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
-      >
-      <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
+
+    <!-- TABS SPESIFIK 6 PROVIDER & CATEGORY -->
+    <div class="flex space-x-6 px-6 overflow-x-auto no-scrollbar text-sm font-medium border-t border-gray-800/60 bg-gray-900/50">
+      <button onclick="switchTab('all')" id="tab-all" class="py-3 whitespace-nowrap active-tab">🔥 Semua Konten</button>
+      <button onclick="switchTab('anime')" id="tab-anime" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🍙 Anime & Donghua</button>
+      <button onclick="switchTab('drakor')" id="tab-drakor" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🇰🇷 Drama Korea (Dramovnime)</button>
+      <button onclick="switchTab('films')" id="tab-films" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🎬 Bioskop & Film (Filmbox)</button>
+      <button onclick="switchTab('viu')" id="tab-viu" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🍿 Viu Originals</button>
+      <button onclick="switchTab('vidio')" id="tab-vidio" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">📺 Live TV & Vidio</button>
+      <button onclick="switchTab('iqiyi')" id="tab-iqiyi" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🌟 iQiyi Trending</button>
     </div>
   </nav>
 
-  <!-- FEATURED BANNER SECTION -->
-  <header class="relative w-full bg-gradient-to-r from-gray-950 via-gray-900 to-transparent py-12 px-8 flex flex-col justify-center min-h-[320px]">
+  <!-- FEATURED HERO BANNER -->
+  <header id="heroBanner" class="relative w-full bg-gradient-to-r from-gray-950 via-gray-900 to-transparent py-12 px-8 flex flex-col justify-center min-h-[320px]">
     <div class="max-w-2xl z-10">
       <span class="bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-        FEATURED
+        FEATURED TAYANGAN
       </span>
-      <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight">
-        Memuat Konten...
+      <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight text-white">
+        Menghubungkan ke 6 API Provider...
       </h1>
-      <p class="text-gray-400 text-sm mt-3">
-        Saksikan penayangan lengkapnya secara gratis di STREAM RAYLIZIIE OFFICIAL.
+      <p id="featuredDesc" class="text-gray-400 text-sm mt-3">
+        Multi-provider gateway aktif: Animekompi, Dramovnime, Filmbox, Vidio, Viu, & iQiyi.
       </p>
       <div class="mt-6">
         <button 
@@ -60,49 +78,111 @@
     </div>
   </header>
 
+  <!-- SEARCH RESULTS SECTION (HIDDEN BY DEFAULT) -->
+  <section id="searchResultsSection" class="px-6 py-6 hidden">
+    <h2 class="text-xl font-bold text-orange-400 mb-4 flex items-center space-x-2">
+      <span>🔍 Hasil Pencarian</span>
+    </h2>
+    <div id="searchContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4"></div>
+  </section>
+
   <!-- MAIN CONTENT CONTAINER -->
-  <main class="px-6 py-8 space-y-10">
+  <main id="mainSections" class="px-6 py-8 space-y-10">
     
-    <!-- ANIME SECTION -->
-    <section>
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
-        <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-        <span>Anime Terbaru & Trending</span>
-      </h2>
+    <!-- 1. ANIME & DONGHUA SECTION -->
+    <section id="sec-anime">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+          <span>Animekompi & Donghua</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: animekompi / iqiyi</span>
+      </div>
       <div id="animeContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
         <p class="text-gray-500 text-sm">Memuat anime...</p>
       </div>
     </section>
 
-    <!-- DRAKOR SECTION -->
-    <section>
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
-        <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-        <span>Drama Korea & Asia</span>
-      </h2>
+    <!-- 2. DRAMA KOREA & ASIA SECTION -->
+    <section id="sec-drakor">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span>
+          <span>Drama Korea & Asia (Dramovnime)</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: dramovnime / viu</span>
+      </div>
       <div id="drakorContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Segera hadir.</p>
+        <p class="text-gray-500 text-sm">Memuat drama Korea...</p>
       </div>
     </section>
 
-    <!-- FILM SECTION -->
-    <section>
-      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
-        <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-        <span>Bioskop & Film</span>
-      </h2>
-      <div id="filmContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Segera hadir.</p>
+    <!-- 3. FILM & BIOSKOP SECTION -->
+    <section id="sec-films">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
+          <span>Bioskop & Film (Filmbox)</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: filmbox / vidio</span>
+      </div>
+      <div id="filmsContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Memuat bioskop film...</p>
+      </div>
+    </section>
+
+    <!-- 4. VIU ORIGINALS & DRAMA -->
+    <section id="sec-viu">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-yellow-500 rounded-full"></span>
+          <span>Viu Originals & Asian Series</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: viu</span>
+      </div>
+      <div id="viuContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Memuat Viu series...</p>
+      </div>
+    </section>
+
+    <!-- 5. LIVE TV & VIDIO CHANNELS -->
+    <section id="sec-vidio">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-red-500 rounded-full"></span>
+          <span>Live TV & Vidio Channels</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: vidio</span>
+      </div>
+      <div id="vidioContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Memuat channel TV & Vidio...</p>
+      </div>
+    </section>
+
+    <!-- 6. IQIYI TRENDING -->
+    <section id="sec-iqiyi">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
+          <span class="w-1.5 h-6 bg-green-500 rounded-full"></span>
+          <span>iQiyi Anime & Donghua Trending</span>
+        </h2>
+        <span class="text-xs text-gray-500">Provider: iqiyi</span>
+      </div>
+      <div id="iqiyiContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <p class="text-gray-500 text-sm">Memuat iQiyi trending...</p>
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL STREAM PLAYER VIDEO -->
+  <!-- UNIVERSAL MODAL STREAM PLAYER -->
   <div id="playerModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gray-900 w-full max-w-4xl rounded-xl overflow-hidden border border-gray-800 relative">
-      <div class="flex items-center justify-between p-4 border-b border-gray-800">
-        <h3 id="playerModalTitle" class="font-bold text-white truncate pr-4">Memuat Video...</h3>
+    <div class="bg-gray-900 w-full max-w-4xl rounded-xl overflow-hidden border border-gray-800 relative shadow-2xl">
+      <div class="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900">
+        <div class="flex items-center space-x-2 truncate">
+          <span id="playerProviderBadge" class="bg-orange-600 text-white text-xs px-2 py-0.5 rounded font-bold">STREAM</span>
+          <h3 id="playerModalTitle" class="font-bold text-white truncate pr-4 text-sm sm:text-base">Memuat Video...</h3>
+        </div>
         <button onclick="closePlayerModal()" class="text-gray-400 hover:text-white font-bold text-2xl leading-none">&times;</button>
       </div>
       <div class="relative aspect-video bg-black">
@@ -111,46 +191,52 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JAVASCRIPT LOGIC ENGINE -->
   <script>
-    const API_BASE_URL = 'https://api-rayliziie.rayyankrens0304.workers.dev';
+    // URL CLOUDFLARE WORKER GATEWAY V10.0 KAMU
+    const GATEWAY_BASE = 'https://api-rayliziie.rayyankrens0304.workers.dev';
     const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
 
-    function fixImageUrl(url) {
-      if (!url || url.includes('via.placeholder.com')) {
-        return SAFE_PLACEHOLDER;
-      }
+    // Pembersih URL gambar otomatis
+    function sanitizeCover(url) {
+      if (!url || url.includes('via.placeholder.com')) return SAFE_PLACEHOLDER;
       return url;
     }
 
-    async function openPlayerModal(itemId) {
-      if (!itemId || itemId === 'undefined' || itemId.trim() === '') {
-        alert('Maaf, ID tayangan ini tidak valid.');
+    // Modal Video Player
+    async function openPlayer(provider, itemId, title = 'Tayangan Video') {
+      if (!itemId || itemId === 'undefined') {
+        alert('Maaf, ID tayangan tidak valid.');
         return;
       }
 
       const modal = document.getElementById('playerModal');
       const iframe = document.getElementById('playerIframe');
       const titleEl = document.getElementById('playerModalTitle');
+      const badgeEl = document.getElementById('playerProviderBadge');
 
-      titleEl.innerText = 'Memuat Player...';
+      badgeEl.innerText = provider.toUpperCase();
+      titleEl.innerText = `Memuat: ${title}...`;
       iframe.src = '';
       modal.classList.remove('hidden');
 
       try {
-        const response = await fetch(`${API_BASE_URL}/play?id=${encodeURIComponent(itemId)}`);
-        const json = await response.json();
+        // Panggil endpoint /play spesifik provider via Gateway
+        const res = await fetch(`${GATEWAY_BASE}/${provider}/play?id=${encodeURIComponent(itemId)}`);
+        const json = await res.json();
 
-        if (json.code === 0 && json.data && json.data.stream_url) {
-          titleEl.innerText = json.data.title || 'Streaming Video';
-          iframe.src = json.data.stream_url;
+        const streamUrl = json?.data?.stream_url || json?.data?.url || json?.stream_url;
+
+        if (streamUrl) {
+          titleEl.innerText = json?.data?.title || title;
+          iframe.src = streamUrl;
         } else {
-          titleEl.innerText = 'Gagal Memuat Video';
-          alert(json.message || 'Stream video tidak dapat diputar.');
+          titleEl.innerText = title;
+          alert('Stream video sedang disiapkan atau memerlukan iFrame embed.');
         }
       } catch (err) {
-        console.error('Error open player:', err);
-        titleEl.innerText = 'Terjadi Kesalahan';
+        console.error('[PLAY ERROR]:', err);
+        titleEl.innerText = title;
       }
     }
 
@@ -161,24 +247,28 @@
       modal.classList.add('hidden');
     }
 
-    function createCard(item) {
-      const validId = item.id || item.path || item.slug;
-      const coverUrl = fixImageUrl(item.cover_url || item.poster || item.image);
-      const title = item.title || 'Untitled';
+    // Helper Pembuat HTML Card Tayangan
+    function createCard(item, provider) {
+      const validId = item.id || item.path || item.slug || item.item_id;
+      const title = item.title || item.name || 'Untitled';
+      const cover = sanitizeCover(item.cover_url || item.poster || item.image || item.thumb);
 
       return `
         <div 
-          onclick="openPlayerModal('${validId}')" 
+          onclick="openPlayer('${provider}', '${validId}', '${title.replace(/'/g, "\\'")}')" 
           class="flex-none w-40 sm:w-48 bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-800 hover:border-orange-500 transition group cursor-pointer"
         >
           <div class="relative aspect-[3/4] bg-gray-800">
             <img 
-              src="${coverUrl}" 
+              src="${cover}" 
               alt="${title}"
               loading="lazy"
               onerror="this.onerror=null; this.src='${SAFE_PLACEHOLDER}';"
               class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
             />
+            <span class="absolute top-2 left-2 bg-black/70 backdrop-blur text-orange-400 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase border border-orange-500/30">
+              ${provider}
+            </span>
           </div>
           <div class="p-3">
             <h3 class="text-sm font-semibold text-white truncate group-hover:text-orange-400">
@@ -189,65 +279,187 @@
       `;
     }
 
-    // 1. FETCH ANIME (INDINPENDENT)
-    async function fetchAnime() {
+    // ==========================================
+    // 6 API FETCH ENGINE
+    // ==========================================
+
+    // 1. Animekompi (Anime Category Fallback)
+    async function loadAnime() {
       const container = document.getElementById('animeContainer');
       try {
-        const res = await fetch(`${API_BASE_URL}/animekompi/home`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const res = await fetch(`${GATEWAY_BASE}/anime/home`);
         const json = await res.json();
+        const data = json.data || json.result || [];
 
-        if (json.code === 0 && json.data && json.data.length > 0) {
-          container.innerHTML = json.data.map(item => createCard(item)).join('');
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'animekompi')).join('');
           
-          const first = json.data[0];
+          // Featured Banner Update
+          const first = data[0];
           document.getElementById('featuredTitle').innerText = first.title;
-          document.getElementById('btnTontonFeatured').onclick = () => openPlayerModal(first.id || first.path);
+          document.getElementById('btnTontonFeatured').onclick = () => openPlayer('animekompi', first.id || first.path, first.title);
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada data anime.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada tayangan anime.</p>`;
         }
       } catch (err) {
-        console.error('Anime Fetch Error:', err);
-        container.innerHTML = `<p class="text-red-400 text-sm">Gagal memuat anime.</p>`;
+        container.innerHTML = `<p class="text-gray-500 text-sm">Gagal memuat anime.</p>`;
       }
     }
 
-    // 2. FETCH DRAKOR (ISOLATED CATCH FOR 404)
-    async function fetchDrakor() {
+    // 2. Dramovnime (Drakor Category Fallback)
+    async function loadDrakor() {
       const container = document.getElementById('drakorContainer');
       try {
-        const res = await fetch(`${API_BASE_URL}/dramovnime/tab`);
-        if (!res.ok) return; // Diamkan jika 404
+        const res = await fetch(`${GATEWAY_BASE}/drakor/tab`);
         const json = await res.json();
+        const data = json.data || [];
 
-        if (json.code === 0 && json.data && json.data.length > 0) {
-          container.innerHTML = json.data.map(item => createCard(item)).join('');
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'dramovnime')).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor siap di-refresh.</p>`;
         }
       } catch (err) {
-        // Abaikan error agar tidak merusak UI lain
+        container.innerHTML = `<p class="text-gray-500 text-sm">Drakor offline.</p>`;
       }
     }
 
-    // 3. FETCH FILM (ISOLATED CATCH FOR 404)
-    async function fetchFilm() {
-      const container = document.getElementById('filmContainer');
+    // 3. Filmbox (Bioskop Movies Fallback)
+    async function loadFilms() {
+      const container = document.getElementById('filmsContainer');
       try {
-        const res = await fetch(`${API_BASE_URL}/filmbox/home`);
-        if (!res.ok) return; // Diamkan jika 404
+        const res = await fetch(`${GATEWAY_BASE}/films/home`);
         const json = await res.json();
+        const data = json.data || [];
 
-        if (json.code === 0 && json.data && json.data.length > 0) {
-          container.innerHTML = json.data.map(item => createCard(item)).join('');
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'filmbox')).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Bioskop siap di-refresh.</p>`;
         }
       } catch (err) {
-        // Abaikan error
+        container.innerHTML = `<p class="text-gray-500 text-sm">Film offline.</p>`;
       }
     }
 
+    // 4. Viu
+    async function loadViu() {
+      const container = document.getElementById('viuContainer');
+      try {
+        const res = await fetch(`${GATEWAY_BASE}/viu/home`);
+        const json = await res.json();
+        const data = json.data || [];
+
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'viu')).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Viu siap di-refresh.</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="text-gray-500 text-sm">Viu offline.</p>`;
+      }
+    }
+
+    // 5. Vidio (Live Channels)
+    async function loadVidio() {
+      const container = document.getElementById('vidioContainer');
+      try {
+        const res = await fetch(`${GATEWAY_BASE}/live/channels`);
+        const json = await res.json();
+        const data = json.data || [];
+
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'vidio')).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">Channel TV siap di-refresh.</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="text-gray-500 text-sm">Vidio offline.</p>`;
+      }
+    }
+
+    // 6. iQiyi
+    async function loadiQiyi() {
+      const container = document.getElementById('iqiyiContainer');
+      try {
+        const res = await fetch(`${GATEWAY_BASE}/iqiyi/trending`);
+        const json = await res.json();
+        const data = json.data || [];
+
+        if (data.length > 0) {
+          container.innerHTML = data.map(i => createCard(i, 'iqiyi')).join('');
+        } else {
+          container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi Trending siap di-refresh.</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi offline.</p>`;
+      }
+    }
+
+    // ==========================================
+    // TAB SWITCHING & SEARCH ENGINE
+    // ==========================================
+    function switchTab(tab) {
+      const tabs = ['all', 'anime', 'drakor', 'films', 'viu', 'vidio', 'iqiyi'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        const sec = document.getElementById(`sec-${t}`);
+        
+        if (btn) btn.className = `py-3 whitespace-nowrap ${t === tab ? 'active-tab' : 'text-gray-400 hover:text-white'}`;
+        if (sec) {
+          if (tab === 'all' || t === tab) {
+            sec.classList.remove('hidden');
+          } else {
+            sec.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    // Search Input Logic
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value.trim();
+      const resultsSec = document.getElementById('searchResultsSection');
+      const container = document.getElementById('searchContainer');
+
+      if (!query) {
+        resultsSec.classList.add('hidden');
+        document.getElementById('mainSections').classList.remove('hidden');
+        return;
+      }
+
+      searchTimeout = setTimeout(async () => {
+        resultsSec.classList.remove('hidden');
+        document.getElementById('mainSections').classList.add('hidden');
+        container.innerHTML = `<p class="col-span-full text-gray-400 text-sm">Mencari '${query}' di 6 provider...</p>`;
+
+        try {
+          // Cari melalui provider Animekompi & Viu
+          const res = await fetch(`${GATEWAY_BASE}/animekompi/list?keyword=${encodeURIComponent(query)}`);
+          const json = await res.json();
+          const data = json.data || [];
+
+          if (data.length > 0) {
+            container.innerHTML = data.map(i => createCard(i, 'animekompi')).join('');
+          } else {
+            container.innerHTML = `<p class="col-span-full text-gray-500 text-sm">Tidak ada hasil untuk '${query}'.</p>`;
+          }
+        } catch (err) {
+          container.innerHTML = `<p class="col-span-full text-red-400 text-sm">Gagal melakukan pencarian.</p>`;
+        }
+      }, 500);
+    });
+
+    // Inisialisasi Seluruh 6 API saat Halaman Dibuka
     document.addEventListener('DOMContentLoaded', () => {
-      fetchAnime();
-      fetchDrakor();
-      fetchFilm();
+      loadAnime();
+      loadDrakor();
+      loadFilms();
+      loadViu();
+      loadVidio();
+      loadiQiyi();
     });
   </script>
 </body>

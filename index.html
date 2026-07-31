@@ -207,27 +207,37 @@
             }
         }
 
+        // Deep extractor to find arrays inside any complex JSON structure
         function extractItems(res) {
             if (!res) return [];
             if (Array.isArray(res)) return res;
             if (Array.isArray(res.data)) return res.data;
-            if (res.data && Array.isArray(res.data.list)) return res.data.list;
-            if (res.data && Array.isArray(res.data.items)) return res.data.items;
-            if (res.data && Array.isArray(res.data.data)) return res.data.data;
-            if (Array.isArray(res.result)) return res.result;
-            if (res.result && Array.isArray(res.result.list)) return res.result.list;
-            if (Array.isArray(res.list)) return res.list;
-            
-            // Deep search for any array in response object
-            for (let key in res) {
-                if (Array.isArray(res[key])) return res[key];
-                if (res[key] && typeof res[key] === 'object') {
-                    for (let subKey in res[key]) {
-                        if (Array.isArray(res[key][subKey])) return res[key][subKey];
+
+            // Direct check common keys
+            const keys = ['list', 'items', 'data', 'result', 'animes', 'movies', 'series', 'videos', 'content', 'shows'];
+            for (const k of keys) {
+                if (res[k] && Array.isArray(res[k])) return res[k];
+                if (res.data && res.data[k] && Array.isArray(res.data[k])) return res.data[k];
+            }
+
+            // Deep recursive search for any valid array of objects
+            function searchArray(obj) {
+                if (!obj || typeof obj !== 'object') return null;
+                for (let key in obj) {
+                    if (Array.isArray(obj[key]) && obj[key].length > 0) {
+                        return obj[key];
                     }
                 }
+                for (let key in obj) {
+                    if (obj[key] && typeof obj[key] === 'object') {
+                        const found = searchArray(obj[key]);
+                        if (found) return found;
+                    }
+                }
+                return null;
             }
-            return [];
+
+            return searchArray(res) || [];
         }
 
         function showLoading(state) {
@@ -315,13 +325,8 @@
 
         async function loadDrakorContent() {
             try {
-                let res = await apiFetch('/vidio/series?page=1&size=20');
-                let items = extractItems(res);
-                if (!items.length) {
-                    res = await apiFetch('/viu/home?country=ID&lang=id');
-                    items = extractItems(res);
-                }
-                renderGrid(items);
+                const res = await apiFetch('/viu/home?country=ID&lang=id');
+                renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
             }
@@ -375,7 +380,7 @@
                     });
                     items = extractItems(res);
                 } else if (activeCategory === 'drakor') {
-                    const res = await apiFetch(`/vidio/search?q=${encodeURIComponent(query)}`);
+                    const res = await apiFetch(`/viu/search?q=${encodeURIComponent(query)}&page=1&limit=16`);
                     items = extractItems(res);
                 }
                 renderGrid(items);
@@ -410,12 +415,14 @@
             synopEl.innerText = item.deskripsi || item.synopsis || item.description || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
             let episodes = item.episodes || item.episode_list || [];
-            if (activeCategory === 'drakor' && (item.id || item.series_id)) {
+            if (activeCategory === 'drakor' && (item.series_id || item.id)) {
                 try {
-                    const contentId = item.id || item.series_id;
-                    const detailRes = await apiFetch(`/vidio/detail?id=${contentId}&type=content_profile`);
+                    const sId = item.series_id || item.id;
+                    const detailRes = await apiFetch(`/viu/detail?series_id=${sId}`);
                     const detailData = detailRes.data || detailRes;
-                    if (detailData && detailData.episodes) episodes = detailData.episodes;
+                    if (detailData && (detailData.episodes || detailData.list)) {
+                        episodes = detailData.episodes || detailData.list;
+                    }
                 } catch (err) {}
             }
 
@@ -438,9 +445,9 @@
             if (!ep) return;
 
             let url = ep.stream_url || ep.url || ep.embed_url;
-            if (!url && ep.id) {
+            if (!url && ep.product_id) {
                 try {
-                    const playRes = await apiFetch(`/vidio/play?id=${ep.id}&type=video`);
+                    const playRes = await apiFetch(`/viu/play?product_id=${ep.product_id}&lang=id`);
                     const playData = playRes.data || playRes;
                     url = playData.stream_url || playData.url || playData.embed_url;
                 } catch (e) {}

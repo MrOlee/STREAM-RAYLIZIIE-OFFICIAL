@@ -1,465 +1,523 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>STREAM RAYLIZIIE OFFICIAL - Enterprise Gateway v10.0</title>
-  
-  <!-- Tailwind CSS Compiled -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
-  
-  <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .active-tab { border-bottom: 2px solid #f97316; color: #f97316; font-weight: bold; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeKompi Streaming & Information</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
 </head>
-<body class="bg-gray-950 text-white font-sans min-h-screen">
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans antialiased">
 
-  <!-- NAVBAR & CATEGORY NAVIGATION -->
-  <nav class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
-    <div class="flex flex-wrap items-center justify-between px-6 py-4">
-      <div class="flex items-center space-x-3">
-        <div class="bg-red-600 text-white px-3 py-1 rounded-lg font-bold text-xl tracking-wider">
-          STREAM
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 bg-gray-900/90 backdrop-blur border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
+                <span class="bg-indigo-600 text-white p-2 rounded-lg font-bold text-xl">
+                    <i class="fa-solid fa-play"></i>
+                </span>
+                <span class="font-extrabold text-xl tracking-wide bg-gradient-to-r from-indigo-400 to-pink-500 bg-clip-text text-transparent">
+                    AnimeKompi
+                </span>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="hidden md:flex space-x-1 text-sm font-medium">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg transition-colors bg-indigo-600 text-white">Home</button>
+                <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Jadwal Rilis</button>
+                <button onclick="switchTab('genres')" id="nav-genres" class="nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Genre</button>
+                <button onclick="switchTab('list')" id="nav-list" class="nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Daftar Anime</button>
+            </nav>
+
+            <!-- Proxy Toggle / Status -->
+            <div class="flex items-center gap-2">
+                <label class="text-xs text-gray-400 hidden sm:inline">CORS Proxy:</label>
+                <button id="proxy-btn" onclick="toggleProxy()" class="text-xs px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:border-indigo-500 transition-colors">
+                    Off (Direct)
+                </button>
+            </div>
         </div>
-        <span class="text-sm font-semibold tracking-wide text-gray-300 hidden sm:inline">
-          RAYLIZIIE OFFICIAL <span class="text-xs text-orange-500 bg-orange-950 px-2 py-0.5 rounded border border-orange-800">v10.0 Gateway</span>
-        </span>
-      </div>
-      
-      <!-- GLOBAL SEARCH BAR -->
-      <div class="relative w-full sm:w-80 mt-3 sm:mt-0">
-        <input 
-          type="text" 
-          id="searchInput"
-          placeholder="Cari anime, drakor, film, TV..." 
-          class="w-full bg-gray-800 text-sm text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
-        >
-        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
-      </div>
-    </div>
 
-    <!-- TABS SPESIFIK 6 PROVIDER & CATEGORY -->
-    <div class="flex space-x-6 px-6 overflow-x-auto no-scrollbar text-sm font-medium border-t border-gray-800/60 bg-gray-900/50">
-      <button onclick="switchTab('all')" id="tab-all" class="py-3 whitespace-nowrap active-tab">🔥 Semua Konten</button>
-      <button onclick="switchTab('anime')" id="tab-anime" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🍙 Anime & Donghua</button>
-      <button onclick="switchTab('drakor')" id="tab-drakor" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🇰🇷 Drama Korea (Dramovnime)</button>
-      <button onclick="switchTab('films')" id="tab-films" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🎬 Bioskop & Film (Filmbox)</button>
-      <button onclick="switchTab('viu')" id="tab-viu" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🍿 Viu Originals</button>
-      <button onclick="switchTab('vidio')" id="tab-vidio" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">📺 Live TV & Vidio</button>
-      <button onclick="switchTab('iqiyi')" id="tab-iqiyi" class="py-3 whitespace-nowrap text-gray-400 hover:text-white">🌟 iQiyi Trending</button>
-    </div>
-  </nav>
-
-  <!-- FEATURED HERO BANNER -->
-  <header id="heroBanner" class="relative w-full bg-gradient-to-r from-gray-950 via-gray-900 to-transparent py-12 px-8 flex flex-col justify-center min-h-[320px]">
-    <div class="max-w-2xl z-10">
-      <span class="bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-        FEATURED TAYANGAN
-      </span>
-      <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight text-white">
-        Menghubungkan ke API Gateway...
-      </h1>
-      <p id="featuredDesc" class="text-gray-400 text-sm mt-3">
-        Multi-provider gateway aktif: Animekompi, Dramovnime, Filmbox, Vidio, Viu, & iQiyi.
-      </p>
-      <div class="mt-6">
-        <button 
-          id="btnTontonFeatured"
-          class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg flex items-center space-x-2 transition cursor-pointer"
-        >
-          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          <span>Tonton Sekarang</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- SEARCH RESULTS SECTION -->
-  <section id="searchResultsSection" class="px-6 py-6 hidden">
-    <h2 class="text-xl font-bold text-orange-400 mb-4 flex items-center space-x-2">
-      <span>🔍 Hasil Pencarian</span>
-    </h2>
-    <div id="searchContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4"></div>
-  </section>
-
-  <!-- MAIN CONTENT CONTAINER -->
-  <main id="mainSections" class="px-6 py-8 space-y-10">
-    
-    <!-- 1. ANIME & DONGHUA SECTION -->
-    <section id="sec-anime">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
-          <span>Animekompi & Donghua</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: animekompi / iqiyi</span>
-      </div>
-      <div id="animeContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat anime...</p>
-      </div>
-    </section>
-
-    <!-- 2. DRAMA KOREA & ASIA SECTION -->
-    <section id="sec-drakor">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span>
-          <span>Drama Korea & Asia (Dramovnime)</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: dramovnime / viu</span>
-      </div>
-      <div id="drakorContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat drama Korea...</p>
-      </div>
-    </section>
-
-    <!-- 3. FILM & BIOSKOP SECTION -->
-    <section id="sec-films">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-          <span>Bioskop & Film (Filmbox)</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: filmbox / vidio</span>
-      </div>
-      <div id="filmsContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat bioskop film...</p>
-      </div>
-    </section>
-
-    <!-- 4. VIU ORIGINALS & DRAMA -->
-    <section id="sec-viu">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-yellow-500 rounded-full"></span>
-          <span>Viu Originals & Asian Series</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: viu</span>
-      </div>
-      <div id="viuContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat Viu series...</p>
-      </div>
-    </section>
-
-    <!-- 5. LIVE TV & VIDIO CHANNELS -->
-    <section id="sec-vidio">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-red-500 rounded-full"></span>
-          <span>Live TV & Vidio Channels</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: vidio</span>
-      </div>
-      <div id="vidioContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat channel TV & Vidio...</p>
-      </div>
-    </section>
-
-    <!-- 6. IQIYI TRENDING -->
-    <section id="sec-iqiyi">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-white flex items-center space-x-2">
-          <span class="w-1.5 h-6 bg-green-500 rounded-full"></span>
-          <span>iQiyi Anime & Donghua Trending</span>
-        </h2>
-        <span class="text-xs text-gray-500">Provider: iqiyi</span>
-      </div>
-      <div id="iqiyiContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
-        <p class="text-gray-500 text-sm">Memuat iQiyi trending...</p>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- UNIVERSAL MODAL STREAM PLAYER -->
-  <div id="playerModal" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-gray-900 w-full max-w-4xl rounded-xl overflow-hidden border border-gray-800 relative shadow-2xl">
-      <div class="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900">
-        <div class="flex items-center space-x-2 truncate">
-          <span id="playerProviderBadge" class="bg-orange-600 text-white text-xs px-2 py-0.5 rounded font-bold">STREAM</span>
-          <h3 id="playerModalTitle" class="font-bold text-white truncate pr-4 text-sm sm:text-base">Memuat Video...</h3>
+        <!-- Mobile Nav -->
+        <div class="md:hidden flex justify-around border-t border-gray-800 py-2 bg-gray-900 text-xs font-medium">
+            <button onclick="switchTab('home')" class="mobile-nav-btn text-indigo-400 flex flex-col items-center gap-1">
+                <i class="fa-solid fa-house text-base"></i> Home
+            </button>
+            <button onclick="switchTab('schedule')" class="mobile-nav-btn text-gray-400 flex flex-col items-center gap-1">
+                <i class="fa-solid fa-calendar-days text-base"></i> Jadwal
+            </button>
+            <button onclick="switchTab('genres')" class="mobile-nav-btn text-gray-400 flex flex-col items-center gap-1">
+                <i class="fa-solid fa-tags text-base"></i> Genre
+            </button>
+            <button onclick="switchTab('list')" class="mobile-nav-btn text-gray-400 flex flex-col items-center gap-1">
+                <i class="fa-solid fa-list-ul text-base"></i> List
+            </button>
         </div>
-        <button onclick="closePlayerModal()" class="text-gray-400 hover:text-white font-bold text-2xl leading-none">&times;</button>
-      </div>
-      <div class="relative aspect-video bg-black">
-        <iframe id="playerIframe" class="w-full h-full border-0" allowfullscreen src=""></iframe>
-      </div>
-    </div>
-  </div>
+    </header>
 
-  <!-- JAVASCRIPT LOGIC ENGINE -->
-  <script>
-    const GATEWAY_BASE = 'https://api-rayliziie.rayyankrens0304.workers.dev';
-    const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
-
-    // Pembersih URL gambar otomatis
-    function sanitizeCover(url) {
-      if (!url || url.includes('via.placeholder.com')) return SAFE_PLACEHOLDER;
-      return url;
-    }
-
-    // Helper aman untuk Fetching Endpoint
-    async function fetchFromGateway(path) {
-      const res = await fetch(`${GATEWAY_BASE}${path}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      return await res.json();
-    }
-
-    // Modal Video Player
-    async function openPlayer(provider, itemId, title = 'Tayangan Video') {
-      if (!itemId || itemId === 'undefined') {
-        alert('Maaf, ID tayangan tidak valid.');
-        return;
-      }
-
-      const modal = document.getElementById('playerModal');
-      const iframe = document.getElementById('playerIframe');
-      const titleEl = document.getElementById('playerModalTitle');
-      const badgeEl = document.getElementById('playerProviderBadge');
-
-      badgeEl.innerText = provider.toUpperCase();
-      titleEl.innerText = `Memuat: ${title}...`;
-      iframe.src = '';
-      modal.classList.remove('hidden');
-
-      try {
-        const json = await fetchFromGateway(`/${provider}/play?id=${encodeURIComponent(itemId)}`);
-        const streamUrl = json?.data?.stream_url || json?.data?.url || json?.stream_url;
-
-        if (streamUrl) {
-          titleEl.innerText = json?.data?.title || title;
-          iframe.src = streamUrl;
-        } else {
-          titleEl.innerText = title;
-          alert('Stream video tidak tersedia atau butuh iFrame embed.');
-        }
-      } catch (err) {
-        console.error('[PLAY ERROR]:', err);
-        titleEl.innerText = title;
-        alert(`Gagal memuat video (${err.message})`);
-      }
-    }
-
-    function closePlayerModal() {
-      const modal = document.getElementById('playerModal');
-      const iframe = document.getElementById('playerIframe');
-      iframe.src = '';
-      modal.classList.add('hidden');
-    }
-
-    // Helper Pembuat HTML Card Tayangan
-    function createCard(item, provider) {
-      const validId = item.id || item.path || item.slug || item.item_id;
-      const title = item.title || item.name || 'Untitled';
-      const cover = sanitizeCover(item.cover_url || item.poster || item.image || item.thumb);
-      const cleanTitle = title.replace(/'/g, "\\'");
-
-      return `
-        <div 
-          onclick="openPlayer('${provider}', '${validId}', '${cleanTitle}')" 
-          class="flex-none w-40 sm:w-48 bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-800 hover:border-orange-500 transition group cursor-pointer"
-        >
-          <div class="relative aspect-[3/4] bg-gray-800">
-            <img 
-              src="${cover}" 
-              alt="${title}"
-              loading="lazy"
-              onerror="this.onerror=null; this.src='${SAFE_PLACEHOLDER}';"
-              class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-            />
-            <span class="absolute top-2 left-2 bg-black/70 backdrop-blur text-orange-400 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase border border-orange-500/30">
-              ${provider}
-            </span>
-          </div>
-          <div class="p-3">
-            <h3 class="text-sm font-semibold text-white truncate group-hover:text-orange-400">
-              ${title}
-            </h3>
-          </div>
-        </div>
-      `;
-    }
-
-    // ==========================================
-    // 6 API FETCH ENGINE
-    // ==========================================
-
-    // 1. Animekompi
-    async function loadAnime() {
-      const container = document.getElementById('animeContainer');
-      try {
-        const json = await fetchFromGateway('/anime/home');
-        const data = json.data || json.result || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'animekompi')).join('');
-          
-          // Featured Banner Update
-          const first = data[0];
-          document.getElementById('featuredTitle').innerText = first.title || 'Featured Anime';
-          document.getElementById('btnTontonFeatured').onclick = () => openPlayer('animekompi', first.id || first.path, first.title);
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada tayangan anime.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">Gagal memuat anime (${err.message}).</p>`;
-      }
-    }
-
-    // 2. Dramovnime
-    async function loadDrakor() {
-      const container = document.getElementById('drakorContainer');
-      try {
-        const json = await fetchFromGateway('/drakor/tab');
-        const data = json.data || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'dramovnime')).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor kosong.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">Drakor offline (${err.message}).</p>`;
-      }
-    }
-
-    // 3. Filmbox
-    async function loadFilms() {
-      const container = document.getElementById('filmsContainer');
-      try {
-        const json = await fetchFromGateway('/films/home');
-        const data = json.data || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'filmbox')).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Bioskop kosong.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">Film offline (${err.message}).</p>`;
-      }
-    }
-
-    // 4. Viu
-    async function loadViu() {
-      const container = document.getElementById('viuContainer');
-      try {
-        const json = await fetchFromGateway('/viu/home');
-        const data = json.data || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'viu')).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Viu kosong.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">Viu offline (${err.message}).</p>`;
-      }
-    }
-
-    // 5. Vidio
-    async function loadVidio() {
-      const container = document.getElementById('vidioContainer');
-      try {
-        const json = await fetchFromGateway('/live/channels');
-        const data = json.data || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'vidio')).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Channel TV kosong.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">Vidio offline (${err.message}).</p>`;
-      }
-    }
-
-    // 6. iQiyi
-    async function loadiQiyi() {
-      const container = document.getElementById('iqiyiContainer');
-      try {
-        const json = await fetchFromGateway('/iqiyi/trending');
-        const data = json.data || [];
-
-        if (data.length > 0) {
-          container.innerHTML = data.map(i => createCard(i, 'iqiyi')).join('');
-        } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi Trending kosong.</p>`;
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="text-red-400/80 text-sm">iQiyi offline (${err.message}).</p>`;
-      }
-    }
-
-    // ==========================================
-    // TAB SWITCHING & SEARCH ENGINE
-    // ==========================================
-    function switchTab(tab) {
-      const tabs = ['all', 'anime', 'drakor', 'films', 'viu', 'vidio', 'iqiyi'];
-      tabs.forEach(t => {
-        const btn = document.getElementById(`tab-${t}`);
-        const sec = document.getElementById(`sec-${t}`);
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        if (btn) btn.className = `py-3 whitespace-nowrap ${t === tab ? 'active-tab' : 'text-gray-400 hover:text-white'}`;
-        if (sec) {
-          if (tab === 'all' || t === tab) {
-            sec.classList.remove('hidden');
-          } else {
-            sec.classList.add('hidden');
-          }
+        <!-- Global Loading Indicator -->
+        <div id="loading" class="hidden flex-col items-center justify-center py-20 gap-3">
+            <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-sm text-gray-400 animate-pulse">Memuat data anime...</p>
+        </div>
+
+        <!-- Error Message Container -->
+        <div id="error-container" class="hidden bg-red-950/50 border border-red-800 text-red-200 p-4 rounded-xl mb-6 text-sm">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-triangle-exclamation text-xl text-red-400"></i>
+                <div>
+                    <p class="font-bold">Gagal mengambil data dari API</p>
+                    <p id="error-text" class="text-xs text-red-300 mt-0.5"></p>
+                </div>
+            </div>
+            <button onclick="enableProxyAndRetry()" class="mt-3 px-3 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded text-xs font-semibold transition-colors">
+                <i class="fa-solid fa-shield-halved mr-1"></i> Coba Gunakan Proxy CORS
+            </button>
+        </div>
+
+        <!-- TAB 1: HOME -->
+        <section id="tab-home" class="tab-content space-y-10">
+            <!-- Featured Sliders Carousel -->
+            <div>
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-amber-500"></i> Featured Spotlight
+                </h2>
+                <div id="slider-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Dynamic Slider Cards -->
+                </div>
+            </div>
+
+            <!-- Trending Today -->
+            <div>
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-indigo-400"></i> Trending Hari Ini
+                </h2>
+                <div id="trending-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Dynamic Cards -->
+                </div>
+            </div>
+
+            <!-- Latest Updates -->
+            <div>
+                <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-pink-400"></i> Update Terbaru
+                </h2>
+                <div id="latest-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    <!-- Dynamic Cards -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: SCHEDULE -->
+        <section id="tab-schedule" class="tab-content hidden space-y-6">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-emerald-400"></i> Jadwal Rilis Mingguan
+            </h2>
+            
+            <!-- Day Selector Tabs -->
+            <div id="day-tabs" class="flex gap-2 overflow-x-auto pb-2 border-b border-gray-800">
+                <!-- Dynamic Day Buttons -->
+            </div>
+
+            <!-- Schedule Anime Grid -->
+            <div id="schedule-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Dynamic Cards -->
+            </div>
+        </section>
+
+        <!-- TAB 3: GENRES -->
+        <section id="tab-genres" class="tab-content hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-purple-400"></i> Kategori Genre
+                </h2>
+                <button id="back-genre-btn" onclick="loadGenresList()" class="hidden text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-gray-300">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Semua Genre
+                </button>
+            </div>
+
+            <!-- Genre Tags Container -->
+            <div id="genre-list" class="flex flex-wrap gap-2">
+                <!-- Dynamic Genre Badges -->
+            </div>
+
+            <!-- Genre Anime Detail Grid -->
+            <div id="genre-detail-container" class="hidden space-y-4">
+                <h3 id="selected-genre-title" class="text-lg font-semibold text-indigo-400"></h3>
+                <div id="genre-anime-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+            </div>
+        </section>
+
+        <!-- TAB 4: LIST ANIME -->
+        <section id="tab-list" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-cyan-400"></i> Semua Koleksi Anime
+                </h2>
+                <!-- Search Box -->
+                <div class="relative w-full sm:w-64">
+                    <input type="text" id="anime-search" oninput="filterAnimeList()" placeholder="Cari judul anime..." 
+                           class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 pl-9 text-xs text-gray-200 focus:outline-none focus:border-indigo-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-500 text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Alphabet Group Tabs -->
+            <div id="alpha-groups" class="flex gap-1 flex-wrap pb-2 border-b border-gray-800">
+                <!-- Group Buttons -->
+            </div>
+
+            <!-- Anime List View -->
+            <div id="anime-list-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <!-- Dynamic Links -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Script Application Logic -->
+    <script>
+        const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
+        const BASE_URL = "https://indocast.site/api/animekompi";
+        
+        let useCorsProxy = false;
+        let activeTab = 'home';
+        let fullAnimeList = [];
+        let rawScheduleData = [];
+
+        // Helper Image Fallback
+        const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
+
+        function toggleProxy() {
+            useCorsProxy = !useCorsProxy;
+            const btn = document.getElementById('proxy-btn');
+            if (useCorsProxy) {
+                btn.innerText = "On (corsproxy.io)";
+                btn.className = "text-xs px-2.5 py-1 rounded border border-indigo-500 bg-indigo-950 text-indigo-300 font-semibold";
+            } else {
+                btn.innerText = "Off (Direct)";
+                btn.className = "text-xs px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300";
+            }
+            // Reload current tab
+            switchTab(activeTab);
         }
-      });
-    }
 
-    // Search Input Logic
-    let searchTimeout;
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      clearTimeout(searchTimeout);
-      const query = e.target.value.trim();
-      const resultsSec = document.getElementById('searchResultsSection');
-      const container = document.getElementById('searchContainer');
-
-      if (!query) {
-        resultsSec.classList.add('hidden');
-        document.getElementById('mainSections').classList.remove('hidden');
-        return;
-      }
-
-      searchTimeout = setTimeout(async () => {
-        resultsSec.classList.remove('hidden');
-        document.getElementById('mainSections').classList.add('hidden');
-        container.innerHTML = `<p class="col-span-full text-gray-400 text-sm">Mencari '${query}'...</p>`;
-
-        try {
-          const json = await fetchFromGateway(`/animekompi/list?keyword=${encodeURIComponent(query)}`);
-          const data = json.data || [];
-
-          if (data.length > 0) {
-            container.innerHTML = data.map(i => createCard(i, 'animekompi')).join('');
-          } else {
-            container.innerHTML = `<p class="col-span-full text-gray-500 text-sm">Tidak ada hasil untuk '${query}'.</p>`;
-          }
-        } catch (err) {
-          container.innerHTML = `<p class="col-span-full text-red-400 text-sm">Gagal melakukan pencarian (${err.message}).</p>`;
+        function enableProxyAndRetry() {
+            if (!useCorsProxy) toggleProxy();
+            else switchTab(activeTab);
         }
-      }, 500);
-    });
 
-    // Inisialisasi Seluruh 6 API saat Halaman Dibuka
-    document.addEventListener('DOMContentLoaded', () => {
-      loadAnime();
-      loadDrakor();
-      loadFilms();
-      loadViu();
-      loadVidio();
-      loadiQiyi();
-    });
-  </script>
+        // Generic API Fetcher
+        async function apiFetch(endpoint) {
+            showLoading(true);
+            hideError();
+
+            const targetUrl = `${BASE_URL}${endpoint}`;
+            const finalUrl = useCorsProxy ? `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` : targetUrl;
+
+            try {
+                const response = await fetch(finalUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': API_KEY
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP Error Status: ${response.status}`);
+                }
+
+                const json = await response.json();
+                showLoading(false);
+                return json;
+            } catch (err) {
+                showLoading(false);
+                showError(err.message || 'Gagal tersambung ke API.');
+                throw err;
+            }
+        }
+
+        function showLoading(state) {
+            document.getElementById('loading').className = state ? 'flex flex-col items-center justify-center py-20 gap-3' : 'hidden';
+        }
+
+        function showError(msg) {
+            const errBox = document.getElementById('error-container');
+            document.getElementById('error-text').innerText = msg;
+            errBox.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-container').classList.add('hidden');
+        }
+
+        // Switch Active Navigation Tab
+        function switchTab(tabName) {
+            activeTab = tabName;
+            
+            // Highlight Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors";
+            });
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) activeNav.className = "nav-btn px-4 py-2 rounded-lg transition-colors bg-indigo-600 text-white font-semibold";
+
+            // Hide/Show Content
+            document.querySelectorAll('.tab-content').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            // Load Data based on tab
+            if (tabName === 'home') loadHomeData();
+            else if (tabName === 'schedule') loadScheduleData();
+            else if (tabName === 'genres') loadGenresList();
+            else if (tabName === 'list') loadAnimeList();
+        }
+
+        // --- TAB 1: HOME LOGIC ---
+        async function loadHomeData() {
+            try {
+                const res = await apiFetch('/home?page=1');
+                if (res.code === 0 && res.data) {
+                    renderSliders(res.data.sliders || []);
+                    renderAnimeGrid('trending-grid', res.data.trending_today || [], true);
+                    renderAnimeGrid('latest-grid', res.data.latest_updates || [], false);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderSliders(sliders) {
+            const container = document.getElementById('slider-container');
+            container.innerHTML = sliders.slice(0, 4).map(item => `
+                <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col sm:flex-row h-auto sm:h-48 group hover:border-gray-700 transition-all">
+                    <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full sm:w-36 h-48 sm:h-full object-cover">
+                    <div class="p-4 flex flex-col justify-between flex-1">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-indigo-900/60 text-indigo-300 text-[10px] px-2 py-0.5 rounded border border-indigo-700/50">${item.release_year || 'Anime'}</span>
+                                <span class="text-xs text-gray-400">${item.genres ? item.genres.slice(0, 2).join(', ') : ''}</span>
+                            </div>
+                            <h3 class="font-bold text-gray-100 text-sm line-clamp-1 group-hover:text-indigo-400 transition-colors">${item.title}</h3>
+                            <p class="text-xs text-gray-400 mt-2 line-clamp-3">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
+                        </div>
+                        <div class="mt-3">
+                            <span class="text-xs text-indigo-400 font-semibold cursor-pointer hover:underline flex items-center gap-1">
+                                Tonton Sekarang <i class="fa-solid fa-angle-right text-[10px]"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAnimeGrid(elementId, items, isTrending = false) {
+            const grid = document.getElementById(elementId);
+            grid.innerHTML = items.map(item => `
+                <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 hover:shadow-lg transition-all">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        ${item.episode ? `<span class="absolute top-2 right-2 bg-indigo-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded">Eps ${item.episode}</span>` : ''}
+                        ${isTrending && item.rank ? `<span class="absolute top-2 left-2 bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded">#${item.rank}</span>` : ''}
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-between">
+                        <h4 class="font-semibold text-xs text-gray-200 line-clamp-2 group-hover:text-indigo-400 transition-colors">${item.title}</h4>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- TAB 2: SCHEDULE LOGIC ---
+        async function loadScheduleData() {
+            try {
+                const res = await apiFetch('/schedule');
+                if (res.code === 0 && Array.isArray(res.data)) {
+                    rawScheduleData = res.data;
+                    renderScheduleTabs(rawScheduleData);
+                    if (rawScheduleData.length > 0) renderScheduleDay(rawScheduleData[0].day);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderScheduleTabs(data) {
+            const container = document.getElementById('day-tabs');
+            container.innerHTML = data.map((dayObj, idx) => `
+                <button onclick="renderScheduleDay('${dayObj.day}')" id="day-btn-${dayObj.day}" 
+                        class="day-btn px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${idx === 0 ? 'bg-indigo-600 text-white' : 'bg-gray-900 text-gray-400 hover:bg-gray-800'}">
+                    ${dayObj.day} (${dayObj.total_items})
+                </button>
+            `).join('');
+        }
+
+        function renderScheduleDay(dayName) {
+            document.querySelectorAll('.day-btn').forEach(b => b.className = "day-btn px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors bg-gray-900 text-gray-400 hover:bg-gray-800");
+            const activeBtn = document.getElementById(`day-btn-${dayName}`);
+            if (activeBtn) activeBtn.className = "day-btn px-4 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors bg-indigo-600 text-white";
+
+            const dayData = rawScheduleData.find(d => d.day === dayName);
+            const grid = document.getElementById('schedule-grid');
+
+            if (!dayData || !dayData.animes.length) {
+                grid.innerHTML = `<p class="col-span-full text-xs text-gray-500 py-10 text-center">Tidak ada rilis anime untuk hari ini.</p>`;
+                return;
+            }
+
+            grid.innerHTML = dayData.animes.map(item => `
+                <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all">
+                    <div class="relative overflow-hidden aspect-[3/4]">
+                        <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
+                        <span class="absolute bottom-2 left-2 bg-gray-950/80 backdrop-blur text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-500/30">
+                            <i class="fa-regular fa-clock mr-1"></i>${item.status}
+                        </span>
+                    </div>
+                    <div class="p-3">
+                        <span class="text-[10px] text-gray-400 block mb-1">Episode ${item.episode}</span>
+                        <h4 class="font-semibold text-xs text-gray-200 line-clamp-2 group-hover:text-indigo-400 transition-colors">${item.title}</h4>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- TAB 3: GENRE LOGIC ---
+        async function loadGenresList() {
+            document.getElementById('genre-list').classList.remove('hidden');
+            document.getElementById('genre-detail-container').classList.add('hidden');
+            document.getElementById('back-genre-btn').classList.add('hidden');
+
+            try {
+                const res = await apiFetch('/genres');
+                if (res.code === 0 && res.data && res.data.genres_list) {
+                    const container = document.getElementById('genre-list');
+                    container.innerHTML = res.data.genres_list.map(g => `
+                        <button onclick="loadGenreDetail('${g.genre_id}', '${g.name}')" 
+                                class="bg-gray-900 hover:bg-indigo-600/20 hover:border-indigo-500 border border-gray-800 px-3 py-1.5 rounded-lg text-xs text-gray-300 transition-all flex items-center gap-2">
+                            <span>${g.name}</span>
+                            <span class="bg-gray-800 text-gray-400 text-[10px] px-1.5 py-0.5 rounded-full">${g.count}</span>
+                        </button>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadGenreDetail(genreId, genreName) {
+            document.getElementById('genre-list').classList.add('hidden');
+            document.getElementById('genre-detail-container').classList.remove('hidden');
+            document.getElementById('back-genre-btn').classList.remove('hidden');
+            document.getElementById('selected-genre-title').innerText = `Genre: ${genreName}`;
+
+            try {
+                const res = await apiFetch(`/genre-detail?genre=${genreId}&page=1`);
+                if (res.code === 0 && res.data && res.data.animes) {
+                    const grid = document.getElementById('genre-anime-grid');
+                    grid.innerHTML = res.data.animes.map(item => `
+                        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all">
+                            <div class="relative overflow-hidden aspect-[3/4]">
+                                <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
+                                ${item.type ? `<span class="absolute top-2 left-2 bg-gray-950/80 text-gray-300 text-[10px] font-bold px-1.5 py-0.5 rounded">${item.type}</span>` : ''}
+                            </div>
+                            <div class="p-3">
+                                <h4 class="font-semibold text-xs text-gray-200 line-clamp-2 group-hover:text-indigo-400 transition-colors">${item.title}</h4>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- TAB 4: LIST LOGIC ---
+        async function loadAnimeList() {
+            try {
+                const res = await apiFetch('/list');
+                if (res.code === 0 && Array.isArray(res.data)) {
+                    fullAnimeList = res.data;
+                    renderAlphaGroups(fullAnimeList);
+                    if (fullAnimeList.length > 0) renderAnimeListGroup(fullAnimeList[0].group);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderAlphaGroups(data) {
+            const container = document.getElementById('alpha-groups');
+            container.innerHTML = data.map((grp, idx) => `
+                <button onclick="renderAnimeListGroup('${grp.group}')" id="grp-btn-${grp.group}" 
+                        class="grp-btn px-2.5 py-1 rounded border border-gray-800 text-xs font-bold text-gray-400 hover:border-indigo-500 transition-colors ${idx === 0 ? 'bg-indigo-600 text-white' : 'bg-gray-900'}">
+                    ${grp.group}
+                </button>
+            `).join('');
+        }
+
+        function renderAnimeListGroup(groupKey) {
+            document.querySelectorAll('.grp-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+            const activeBtn = document.getElementById(`grp-btn-${groupKey}`);
+            if (activeBtn) activeBtn.classList.add('bg-indigo-600', 'text-white');
+
+            const groupObj = fullAnimeList.find(g => g.group === groupKey);
+            const container = document.getElementById('anime-list-grid');
+
+            if (!groupObj || !groupObj.animes.length) {
+                container.innerHTML = `<p class="col-span-full text-xs text-gray-500 py-10">Kosong.</p>`;
+                return;
+            }
+
+            container.innerHTML = groupObj.animes.map(item => `
+                <div class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-gray-700 transition-all cursor-pointer">
+                    <span class="text-xs text-gray-200 font-medium truncate pr-2">${item.title}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                </div>
+            `).join('');
+        }
+
+        function filterAnimeList() {
+            const query = document.getElementById('anime-search').value.toLowerCase().trim();
+            const container = document.getElementById('anime-list-grid');
+
+            if (!query) {
+                if (fullAnimeList.length > 0) renderAnimeListGroup(fullAnimeList[0].group);
+                return;
+            }
+
+            let matches = [];
+            fullAnimeList.forEach(grp => {
+                grp.animes.forEach(a => {
+                    if (a.title.toLowerCase().includes(query)) matches.push(a);
+                });
+            });
+
+            if (matches.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-xs text-gray-500 py-10 text-center">Tidak ada anime yang cocok dengan "${query}".</p>`;
+                return;
+            }
+
+            container.innerHTML = matches.slice(0, 60).map(item => `
+                <div class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-gray-700 transition-all cursor-pointer">
+                    <span class="text-xs text-gray-200 font-medium truncate pr-2">${item.title}</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                </div>
+            `).join('');
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('home');
+        });
+    </script>
 </body>
 </html>

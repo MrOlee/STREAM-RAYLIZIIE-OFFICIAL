@@ -1,34 +1,40 @@
 export default async function handler(req, res) {
-    const { path } = req.query;
-    const subPath = Array.isArray(path) ? path.join('/') : (path || '');
-    
-    // Ambil semua parameter query tambahan
-    const urlParams = new URLSearchParams(req.query);
-    urlParams.delete('path');
-    const queryString = urlParams.toString();
-    
-    // URL Base API utama tujuan kamu (sesuaikan dengan API backend sumber kamu)
-    const targetBase = "https://v8.animekompi.sbs"; 
-    const targetUrl = `${targetBase}/${subPath}${queryString ? '?' + queryString : ''}`;
+  const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
 
-    try {
-        const response = await fetch(targetUrl, {
-            method: req.method,
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': req.headers['x-api-key'] || ''
-            }
-        });
+  // Tangkap path dinamis dari catch-all [...path].js
+  const { path, ...queryParams } = req.query;
+  const endpointPath = Array.isArray(path) ? path.join('/') : (path || '');
 
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.includes("application/json")) {
-            const data = await response.json();
-            return res.status(response.status).json(data);
-        } else {
-            const text = await response.text();
-            return res.status(response.status).send(text);
-        }
-    } catch (error) {
-        return res.status(500).json({ error: "Gateway Proxy Error", details: error.message });
+  // Susun URL tujuan ke server eksternal beserta query string-nya (misal: ?path=...)
+  const queryStr = new URLSearchParams(queryParams).toString();
+  const targetUrl = `https://indocast.site/api/animekompi/${endpointPath}${queryStr ? '?' + queryStr : ''}`;
+
+  try {
+    const apiResponse = await fetch(targetUrl, {
+      method: req.method,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
+      }
+    });
+
+    // Izinkan akses CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    const contentType = apiResponse.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await apiResponse.json();
+      return res.status(apiResponse.status).json(data);
+    } else {
+      const text = await apiResponse.text();
+      return res.status(apiResponse.status).send(text);
     }
+  } catch (error) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(500).json({ 
+      code: 1, 
+      message: 'Gagal terhubung ke server eksternal', 
+      error: error.message 
+    });
+  }
 }

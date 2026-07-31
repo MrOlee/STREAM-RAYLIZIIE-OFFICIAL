@@ -197,6 +197,7 @@
                 }
 
                 const json = await response.json();
+                console.log(`API Response [${endpoint}]:`, json);
                 showLoading(false);
                 return json;
             } catch (err) {
@@ -206,18 +207,19 @@
             }
         }
 
+        // Deep Extractor to scan all levels of JSON response for arrays
         function extractItems(res) {
             if (!res) return [];
             if (Array.isArray(res)) return res;
             if (Array.isArray(res.data)) return res.data;
 
-            const keys = ['list', 'items', 'data', 'result', 'animes', 'movies', 'series', 'videos', 'content', 'shows'];
-            for (const k of keys) {
+            const commonKeys = ['list', 'items', 'data', 'result', 'animes', 'movies', 'series', 'videos', 'content', 'shows', 'records'];
+            for (const k of commonKeys) {
                 if (res[k] && Array.isArray(res[k])) return res[k];
                 if (res.data && res.data[k] && Array.isArray(res.data[k])) return res.data[k];
             }
 
-            function searchArray(obj) {
+            function deepSearch(obj) {
                 if (!obj || typeof obj !== 'object') return null;
                 for (let key in obj) {
                     if (Array.isArray(obj[key]) && obj[key].length > 0) {
@@ -226,14 +228,14 @@
                 }
                 for (let key in obj) {
                     if (obj[key] && typeof obj[key] === 'object') {
-                        const found = searchArray(obj[key]);
+                        const found = deepSearch(obj[key]);
                         if (found) return found;
                     }
                 }
                 return null;
             }
 
-            return searchArray(res) || [];
+            return deepSearch(res) || [];
         }
 
         function showLoading(state) {
@@ -300,7 +302,7 @@
             try {
                 const res = await apiFetch('/dramovnime/list', {
                     method: 'POST',
-                    body: JSON.stringify({ channelId: "2", page: "1", perPage: "20", sort: "ForYou", genre: "All", country: "All" })
+                    body: JSON.stringify({ channelId: "2", page: "1", perPage: "24", sort: "ForYou", genre: "All", country: "All" })
                 });
                 renderGrid(extractItems(res));
             } catch (e) {
@@ -310,7 +312,7 @@
 
         async function loadFilmsContent() {
             try {
-                const res = await apiFetch('/filmbox/trending?page=0&perPage=20');
+                const res = await apiFetch('/filmbox/trending?page=0&perPage=24');
                 renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
@@ -319,8 +321,13 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/iqiyi/trending');
-                renderGrid(extractItems(res));
+                let res = await apiFetch('/iqiyi/trending');
+                let items = extractItems(res);
+                if (!items.length) {
+                    res = await apiFetch('/iqiyi/home');
+                    items = extractItems(res);
+                }
+                renderGrid(items);
             } catch (e) {
                 renderGrid([]);
             }
@@ -335,8 +342,8 @@
 
             grid.innerHTML = items.map(item => {
                 const key = storeItem(item);
-                const title = item.title || item.name || item.subjectTitle || item.synopsis || 'Judul Konten';
-                const thumb = item.cover_url || item.thumb || item.poster || item.image || item.img || placeholderImg;
+                const title = item.title || item.name || item.subjectTitle || item.original_title || 'Judul Konten';
+                const thumb = item.cover_url || item.thumb || item.poster || item.image || item.img || item.cover || item.banner || placeholderImg;
                 const badge = item.episode || item.sub || item.type || 'Sub Indo';
 
                 return `

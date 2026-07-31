@@ -248,12 +248,36 @@
         let fullAnimeList = [];
         let rawScheduleData = [];
 
+        // Global Anime Cache
+        window.animeCache = {};
+
         const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
 
-        // Safe String Sanitizer for Onclick Event Handlers
-        function cleanStr(str) {
-            if (!str) return '';
-            return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+        function storeAnime(item) {
+            const key = 'item_' + Math.random().toString(36).substring(2, 11);
+            window.animeCache[key] = item;
+            return key;
+        }
+
+        function getAnimeSlug(item) {
+            if (!item) return '';
+            let raw = item.id || item.slug || item.endpoint || item.anime_id || item.param || item.url || item.link;
+            
+            if (raw) {
+                // Ekstrak bagian akhir path jika berupa URL/path
+                raw = String(raw).replace(/\/$/, '').split('/').pop();
+                return raw;
+            }
+
+            // Fallback: ubah judul menjadi slug (kebab-case)
+            if (item.title) {
+                return item.title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-');
+            }
+            return '';
         }
 
         // Generic API Fetcher
@@ -302,7 +326,6 @@
             switchTab(activeTab);
         }
 
-        // Switch Active Navigation Tab
         function switchTab(tabName) {
             activeTab = tabName;
             
@@ -336,11 +359,11 @@
         function renderSliders(sliders) {
             const container = document.getElementById('slider-container');
             container.innerHTML = sliders.slice(0, 4).map(item => {
-                const animeId = item.id || item.slug || item.endpoint || item.title;
+                const key = storeAnime(item);
                 return `
-                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                <div onclick="handleAnimeClick('${key}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col sm:flex-row h-auto sm:h-48 group hover:border-indigo-500/50 transition-all cursor-pointer">
-                    <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full sm:w-36 h-48 sm:h-full object-cover">
+                    <img src="${item.cover_url || item.thumb}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full sm:w-36 h-48 sm:h-full object-cover">
                     <div class="p-4 flex flex-col justify-between flex-1">
                         <div>
                             <div class="flex items-center gap-2 mb-1">
@@ -363,12 +386,12 @@
         function renderAnimeGrid(elementId, items, isTrending = false) {
             const grid = document.getElementById(elementId);
             grid.innerHTML = items.map(item => {
-                const animeId = item.id || item.slug || item.endpoint || item.title;
+                const key = storeAnime(item);
                 return `
-                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                <div onclick="handleAnimeClick('${key}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer">
                     <div class="relative overflow-hidden aspect-[3/4]">
-                        <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <img src="${item.cover_url || item.thumb}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                         ${item.episode ? `<span class="absolute top-2 right-2 bg-indigo-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded">Eps ${item.episode}</span>` : ''}
                         ${isTrending && item.rank ? `<span class="absolute top-2 left-2 bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.5 rounded">#${item.rank}</span>` : ''}
                     </div>
@@ -415,12 +438,12 @@
             }
 
             grid.innerHTML = dayData.animes.map(item => {
-                const animeId = item.id || item.slug || item.endpoint || item.title;
+                const key = storeAnime(item);
                 return `
-                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                <div onclick="handleAnimeClick('${key}')" 
                      class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all cursor-pointer">
                     <div class="relative overflow-hidden aspect-[3/4]">
-                        <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
+                        <img src="${item.cover_url || item.thumb}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
                         <span class="absolute bottom-2 left-2 bg-gray-950/80 backdrop-blur text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-500/30">
                             <i class="fa-regular fa-clock mr-1"></i>${item.status}
                         </span>
@@ -465,12 +488,12 @@
                 if (res.code === 0 && res.data && res.data.animes) {
                     const grid = document.getElementById('genre-anime-grid');
                     grid.innerHTML = res.data.animes.map(item => {
-                        const animeId = item.id || item.slug || item.endpoint || item.title;
+                        const key = storeAnime(item);
                         return `
-                        <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                        <div onclick="handleAnimeClick('${key}')" 
                              class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex flex-col group hover:border-indigo-500/50 transition-all cursor-pointer">
                             <div class="relative overflow-hidden aspect-[3/4]">
-                                <img src="${item.cover_url}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
+                                <img src="${item.cover_url || item.thumb}" referrerpolicy="no-referrer" onerror="this.src='${placeholderImg}'" alt="${item.title}" class="w-full h-full object-cover">
                                 ${item.type ? `<span class="absolute top-2 left-2 bg-gray-950/80 text-gray-300 text-[10px] font-bold px-1.5 py-0.5 rounded">${item.type}</span>` : ''}
                             </div>
                             <div class="p-3">
@@ -518,9 +541,9 @@
             }
 
             container.innerHTML = groupObj.animes.map(item => {
-                const animeId = item.id || item.slug || item.endpoint || item.title;
+                const key = storeAnime(item);
                 return `
-                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                <div onclick="handleAnimeClick('${key}')" 
                      class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-indigo-500 transition-all cursor-pointer group">
                     <span class="text-xs text-gray-200 font-medium truncate pr-2 group-hover:text-indigo-400">${item.title}</span>
                     <i class="fa-solid fa-play text-[10px] text-gray-600 group-hover:text-indigo-400"></i>
@@ -550,9 +573,9 @@
             }
 
             container.innerHTML = matches.slice(0, 60).map(item => {
-                const animeId = item.id || item.slug || item.endpoint || item.title;
+                const key = storeAnime(item);
                 return `
-                <div onclick="openAnimeDetail('${cleanStr(animeId)}', '${cleanStr(item.title)}')" 
+                <div onclick="handleAnimeClick('${key}')" 
                      class="bg-gray-900 border border-gray-800 p-3 rounded-lg flex items-center justify-between hover:border-indigo-500 transition-all cursor-pointer group">
                     <span class="text-xs text-gray-200 font-medium truncate pr-2 group-hover:text-indigo-400">${item.title}</span>
                     <i class="fa-solid fa-play text-[10px] text-gray-600 group-hover:text-indigo-400"></i>
@@ -560,8 +583,16 @@
             `}).join('');
         }
 
+        // --- HANDLER KLIK ANIME ---
+        function handleAnimeClick(cacheKey) {
+            const item = window.animeCache[cacheKey];
+            if (item) {
+                openAnimeDetail(item);
+            }
+        }
+
         // --- MODAL STREAMING & DETAIL LOGIC ---
-        async function openAnimeDetail(animeId, title) {
+        async function openAnimeDetail(item) {
             const modal = document.getElementById('detail-modal');
             const placeholder = document.getElementById('player-placeholder');
             const iframe = document.getElementById('video-iframe');
@@ -570,6 +601,9 @@
             const synopEl = document.getElementById('modal-synopsis');
             const epListEl = document.getElementById('episode-list');
 
+            const animeTitle = item.title || 'Detail Anime';
+            const slug = getAnimeSlug(item);
+
             // Reset Modal View
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -577,41 +611,53 @@
             iframe.src = '';
             placeholder.classList.remove('hidden');
             
-            titleEl.innerText = title;
+            titleEl.innerText = animeTitle;
             metaEl.innerHTML = `<span class="bg-gray-800 px-2 py-0.5 rounded text-[10px]">Memuat detail...</span>`;
             synopEl.innerText = 'Mengambil sinopsis dan daftar episode...';
             epListEl.innerHTML = '<div class="text-xs text-gray-500">Memuat episode...</div>';
 
             try {
-                // Call API Detail dengan Encode 1 Kali
-                const res = await apiFetch(`/detail?id=${encodeURIComponent(animeId)}`);
-                const detail = res.data || res;
+                // Cobalah panggil endpoint detail dengan slug
+                let res = null;
+                try {
+                    res = await apiFetch(`/detail?id=${encodeURIComponent(slug)}`);
+                } catch(err1) {
+                    // Fallback query parameter
+                    try {
+                        res = await apiFetch(`/detail?endpoint=${encodeURIComponent(slug)}`);
+                    } catch(err2) {
+                        res = await apiFetch(`/detail?slug=${encodeURIComponent(slug)}`);
+                    }
+                }
+
+                const detail = res ? (res.data || res) : null;
 
                 if (detail) {
-                    titleEl.innerText = detail.title || title;
-                    synopEl.innerText = detail.synopsis || detail.deskripsi || 'Tidak ada deskripsi sinopsis.';
+                    titleEl.innerText = detail.title || animeTitle;
+                    synopEl.innerText = detail.synopsis || detail.deskripsi || item.deskripsi || 'Tidak ada deskripsi sinopsis.';
                     
                     metaEl.innerHTML = `
-                        ${detail.status ? `<span class="bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-700/50">${detail.status}</span>` : ''}
+                        ${detail.status || item.status ? `<span class="bg-indigo-900/60 text-indigo-300 px-2 py-0.5 rounded border border-indigo-700/50">${detail.status || item.status}</span>` : ''}
                         ${detail.rating ? `<span class="bg-amber-900/60 text-amber-300 px-2 py-0.5 rounded border border-amber-700/50"><i class="fa-solid fa-star mr-1"></i>${detail.rating}</span>` : ''}
                         ${detail.genres ? detail.genres.map(g => `<span class="bg-gray-800 text-gray-300 px-2 py-0.5 rounded">${g}</span>`).join('') : ''}
                     `;
 
-                    // Handle Episodes List
+                    // Handle Episode List
                     const episodes = detail.episodes || detail.episode_list || [];
                     if (episodes.length > 0) {
                         epListEl.innerHTML = episodes.map((ep, idx) => {
-                            const streamUrl = ep.stream_url || ep.url || ep.id;
+                            const streamTarget = ep.stream_url || ep.url || ep.id || ep.endpoint;
+                            const epKey = storeAnime({ url: streamTarget });
                             return `
-                            <button onclick="playEpisode('${cleanStr(streamUrl)}')" 
+                            <button onclick="playEpisodeFromCache('${epKey}')" 
                                     class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
                                 <i class="fa-solid fa-play text-[10px]"></i> Episode ${ep.episode || ep.title || (idx + 1)}
                             </button>
                         `}).join('');
 
-                        // Auto-play Episode Pertama
+                        // Auto play episode 1
                         const firstEp = episodes[0];
-                        playEpisode(firstEp.stream_url || firstEp.url || firstEp.id);
+                        playEpisode(firstEp.stream_url || firstEp.url || firstEp.id || firstEp.endpoint);
                     } else if (detail.stream_url || detail.embed_url) {
                         playEpisode(detail.stream_url || detail.embed_url);
                         epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
@@ -627,16 +673,25 @@
             }
         }
 
+        function playEpisodeFromCache(cacheKey) {
+            const item = window.animeCache[cacheKey];
+            if (item && item.url) {
+                playEpisode(item.url);
+            }
+        }
+
         function playEpisode(urlOrId) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
+            if (!urlOrId) return;
+
             placeholder.classList.add('hidden');
             iframe.classList.remove('hidden');
 
-            let targetSrc = urlOrId;
-            if (!urlOrId.startsWith('http://') && !urlOrId.startsWith('https://')) {
-                targetSrc = `${BASE_URL}/stream?id=${encodeURIComponent(urlOrId)}`;
+            let targetSrc = String(urlOrId);
+            if (!targetSrc.startsWith('http://') && !targetSrc.startsWith('https://')) {
+                targetSrc = `${BASE_URL}/stream?id=${encodeURIComponent(targetSrc)}`;
             }
 
             iframe.src = targetSrc;
@@ -650,7 +705,7 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Close modal on click backdrop
+        // Close modal on backdrop click
         document.getElementById('detail-modal').addEventListener('click', (e) => {
             if (e.target.id === 'detail-modal') closeModal();
         });

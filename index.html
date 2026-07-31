@@ -1,221 +1,155 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREAM RAYLIZIIE OFFICIAL - Nonton Anime, Drakor & Film</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .media-card { min-width: 160px; width: 160px; transition: transform 0.3s ease; }
-        @media (min-width: 768px) { .media-card { min-width: 200px; width: 200px; } }
-        .media-card:hover { transform: scale(1.05); z-index: 30; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STREAM RAYLIZIIE OFFICIAL</title>
+  
+  <!-- Tailwind CSS Compiled (Aman untuk Production di Vercel, Bebas Warning Console) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+  
+  <style>
+    /* Custom Scrollbar untuk Card Slider */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
 </head>
-<body class="bg-[#141414] text-white font-sans antialiased">
+<body class="bg-gray-950 text-white font-sans min-h-screen">
 
-    <!-- NAVBAR HEADER -->
-    <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-black/90 to-transparent px-4 lg:px-12 py-4 flex items-center justify-between">
-        <div class="flex items-center space-x-8">
-            <a href="#" class="flex items-center">
-                <img id="site-logo" src="https://iili.io/C8mKZsj.png" alt="STREAM RAYLIZIIE OFFICIAL" class="h-9 md:h-11 object-contain">
-            </a>
-            <nav class="hidden md:flex space-x-6 text-sm font-medium text-gray-300">
-                <a href="#" onclick="location.reload()" class="hover:text-orange-500 transition">Beranda</a>
-                <a href="#animeSection" class="hover:text-orange-500 transition">Anime</a>
-                <a href="#drakorSection" class="hover:text-orange-500 transition">Drakor</a>
-                <a href="#filmsSection" class="hover:text-orange-500 transition">Film</a>
-            </nav>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="relative">
-                <input type="text" id="searchInput" placeholder="Cari tayangan..." class="bg-black/60 border border-gray-700 text-xs md:text-sm rounded-full py-2 pl-9 pr-4 focus:outline-none focus:border-orange-500 w-36 md:w-64">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-            </div>
-        </div>
-    </header>
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
+    <div class="flex items-center space-x-3">
+      <div class="bg-red-600 text-white p-2 rounded-lg font-bold text-xl tracking-wider">
+        STREAM
+      </div>
+      <span class="text-sm font-semibold tracking-wide text-gray-300">RAYLIZIIE OFFICIAL</span>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="relative w-72">
+      <input 
+        type="text" 
+        id="searchInput"
+        placeholder="Cari tayangan..." 
+        class="w-full bg-gray-800 text-sm text-white rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
+      >
+      <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </div>
+  </nav>
 
-    <!-- HERO BANNER -->
-    <section id="heroSection" class="relative w-full h-[70vh] md:h-[85vh] bg-cover bg-center flex items-end pb-12 px-4 lg:px-12 bg-gray-900">
-        <div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/40 to-black/60"></div>
-        <div class="relative z-10 max-w-2xl space-y-4">
-            <span class="bg-orange-600 text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">FEATURED</span>
-            <h1 id="heroTitle" class="text-3xl md:text-6xl font-extrabold tracking-tight">Memuat Konten...</h1>
-            <p id="heroDesc" class="text-xs md:text-sm text-gray-300 line-clamp-3">Menghubungkan ke server STREAM RAYLIZIIE OFFICIAL...</p>
-            <div class="flex space-x-3 pt-2">
-                <button id="heroPlayBtn" class="bg-orange-500 hover:bg-orange-600 text-black font-bold px-6 py-2.5 rounded-lg flex items-center space-x-2 transition">
-                    <i class="fa-solid fa-play"></i> <span>Tonton Sekarang</span>
-                </button>
-            </div>
+  <!-- FEATURED BANNER SECTION -->
+  <header class="relative w-full bg-gradient-to-r from-gray-950 via-gray-900 to-transparent py-12 px-8 flex flex-col justify-center min-h-[350px]">
+    <div class="max-w-2xl z-10">
+      <span class="bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wider">
+        FEATURED
+      </span>
+      <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight">
+        Kuroiwa Medaka ni Watashi no Kawaii ga Tsuujinai
+      </h1>
+      <p id="featuredDesc" class="text-gray-400 text-sm mt-3">
+        Saksikan penayangan lengkapnya secara gratis di STREAM RAYLIZIIE OFFICIAL.
+      </p>
+      <div class="mt-6 flex space-x-4">
+        <button class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-lg flex items-center space-x-2 transition">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <span>Tonton Sekarang</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="px-6 py-8 space-y-10">
+
+    <!-- ANIME TERBARU & TRENDING SECTION -->
+    <section>
+      <h2 class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+        <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span>
+        <span>Anime Terbaru & Trending</span>
+      </h2>
+      
+      <div id="animeContainer" class="flex space-x-4 overflow-x-auto no-scrollbar py-2">
+        <!-- Card anime akan di-render di sini oleh JavaScript -->
+        <div class="animate-pulse flex space-x-4">
+          <div class="w-40 h-60 bg-gray-800 rounded-lg"></div>
+          <div class="w-40 h-60 bg-gray-800 rounded-lg"></div>
+          <div class="w-40 h-60 bg-gray-800 rounded-lg"></div>
         </div>
+      </div>
     </section>
 
-    <!-- MAIN CONTENT -->
-    <main class="px-4 lg:px-12 -mt-16 relative z-20 space-y-10 pb-16">
-        <section id="animeSection" class="space-y-3">
-            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-orange-500 rounded-full"></span> Anime Terbaru & Trending
-            </h2>
-            <div id="animeRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
-                <p class="text-gray-500 text-sm animate-pulse">Memuat data anime...</p>
-            </div>
-        </section>
+  </main>
 
-        <section id="drakorSection" class="space-y-3">
-            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-pink-500 rounded-full"></span> Drama Korea & Asia
-            </h2>
-            <div id="drakorRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
-                <p class="text-gray-500 text-sm animate-pulse">Memuat data drakor...</p>
-            </div>
-        </section>
+  <!-- JAVASCRIPT FETCH ENGINE & FALLBACK HANDLER -->
+  <script>
+    // URL Placeholder baru yang stabil jika gambar utama gagal dimuat
+    const FALLBACK_IMAGE = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
 
-        <section id="filmsSection" class="space-y-3">
-            <h2 class="text-xl md:text-2xl font-bold flex items-center gap-2">
-                <span class="w-1.5 h-6 bg-red-600 rounded-full"></span> Bioskop & Film
-            </h2>
-            <div id="filmsRow" class="flex space-x-4 overflow-x-auto scrollbar-hide py-2">
-                <p class="text-gray-500 text-sm animate-pulse">Memuat data film...</p>
-            </div>
-        </section>
-    </main>
+    // Konfigurasi Base API (Sesuaikan jika endpoint menggunakan URL domain backend kamu)
+    const API_BASE_URL = ''; 
 
-    <!-- STREAMING MODAL / PLAYER -->
-    <div id="playerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-[#1f1f1f] border border-gray-800 rounded-2xl w-full max-w-4xl overflow-hidden shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl z-10 bg-black/50 w-10 h-10 rounded-full flex items-center justify-center">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div class="aspect-video w-full bg-black">
-                <iframe id="videoIframe" class="w-full h-full" src="" frameborder="0" allowfullscreen></iframe>
+    // Fungsi membuat Card Anime HTML
+    function createAnimeCard(item) {
+      // Pastikan URL gambar tidak null/empty, jika kosong langsung pakai fallback
+      const coverUrl = item.cover_url || item.poster || item.image || FALLBACK_IMAGE;
+      const title = item.title || 'Untitled Anime';
+      const path = item.path || item.slug || '#';
+
+      return `
+        <div class="flex-none w-40 sm:w-48 bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-800 hover:border-orange-500 transition group cursor-pointer">
+          <a href="/detail.html?path=${encodeURIComponent(path)}">
+            <div class="relative aspect-[3/4] bg-gray-800">
+              <img 
+                src="${coverUrl}" 
+                alt="${title}"
+                loading="lazy"
+                onerror="this.onerror=null; this.src='${FALLBACK_IMAGE}';"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+              />
             </div>
-            <div class="p-6 space-y-4">
-                <h3 id="modalTitle" class="text-2xl font-bold">Judul Tayangan</h3>
+            <div class="p-3">
+              <h3 class="text-sm font-semibold text-white truncate group-hover:text-orange-400">
+                ${title}
+              </h3>
             </div>
+          </a>
         </div>
-    </div>
+      `;
+    }
 
-    <!-- FOOTER -->
-    <footer class="border-t border-gray-800 py-8 text-center text-xs text-gray-500">
-        <p>&copy; 2026 STREAM RAYLIZIIE OFFICIAL. All rights reserved.</p>
-    </footer>
+    // Fungsi Load Data dari API
+    async function fetchHomeData() {
+      const container = document.getElementById('animeContainer');
+      
+      try {
+        const response = await fetch(`${API_BASE_URL}/animekompi/home`);
+        const json = await response.json();
 
-    <!-- LOGIKA API INTEGRATED -->
-    <script>
-        const API_BASE_URL = 'https://api-rayliziie.rayyankrens0304.workers.dev';
+        console.log('[Response JSON /animekompi/home]:', json);
 
-        // Smart Array Extractor: Mencari Array di mana saja di dalam JSON
-        function findArrayInObject(obj) {
-            if (!obj) return [];
-            if (Array.isArray(obj)) return obj;
-            if (typeof obj !== 'object') return [];
-
-            const priorityKeys = ['data', 'result', 'list', 'items', 'latest', 'popular', 'trending', 'content', 'shows'];
-            for (const key of priorityKeys) {
-                if (Array.isArray(obj[key])) return obj[key];
-            }
-
-            for (const key in obj) {
-                if (Array.isArray(obj[key])) return obj[key];
-                if (obj[key] && typeof obj[key] === 'object') {
-                    for (const subKey in obj[key]) {
-                        if (Array.isArray(obj[key][subKey])) return obj[key][subKey];
-                    }
-                }
-            }
-            return [];
+        if (json.code === 0 && json.data && json.data.length > 0) {
+          container.innerHTML = json.data.map(item => createAnimeCard(item)).join('');
+        } else {
+          // Jika data kosong atau bermasalah
+          container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada tayangan yang ditemukan.</p>`;
         }
+      } catch (error) {
+        console.error('Error fetching anime home:', error);
+        container.innerHTML = `<p class="text-red-400 text-sm">Gagal memuat data tayangan.</p>`;
+      }
+    }
 
-        async function fetchData(endpoint) {
-            try {
-                const res = await fetch(`${API_BASE_URL}${endpoint}`);
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const json = await res.json();
-                console.log(`[Response JSON ${endpoint}]:`, json);
-                return findArrayInObject(json);
-            } catch (err) {
-                console.error('Error fetching ' + endpoint + ':', err);
-                return [];
-            }
-        }
-
-        async function init() {
-            // Load Anime
-            const animeData = await fetchData('/animekompi/home');
-            if (animeData.length > 0) {
-                setupHero(animeData[0], 'animekompi');
-                renderRow('animeRow', animeData, 'animekompi');
-            } else {
-                document.getElementById('animeRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data anime.</p>';
-            }
-
-            // Load Drakor
-            const drakorData = await fetchData('/dramovnime/tab');
-            if (drakorData.length > 0) {
-                renderRow('drakorRow', drakorData, 'dramovnime');
-            } else {
-                document.getElementById('drakorRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data drakor.</p>';
-            }
-
-            // Load Films
-            const filmData = await fetchData('/filmbox/home');
-            if (filmData.length > 0) {
-                renderRow('filmsRow', filmData, 'filmbox');
-            } else {
-                document.getElementById('filmsRow').innerHTML = '<p class="text-gray-500 text-sm">Gagal memuat data film.</p>';
-            }
-        }
-
-        function setupHero(item, category) {
-            document.getElementById('heroTitle').innerText = item.title || item.name || item.judul || 'Tayangan Unggulan';
-            document.getElementById('heroDesc').innerText = item.synopsis || item.description || item.sinopsis || 'Saksikan penayangan lengkapnya secara gratis di STREAM RAYLIZIIE OFFICIAL.';
-            
-            const bg = item.banner || item.poster || item.cover || item.image || item.thumb;
-            if (bg) {
-                document.getElementById('heroSection').style.backgroundImage = `url('${bg}')`;
-            }
-            document.getElementById('heroPlayBtn').onclick = () => openPlayer(item.title || item.name || item.judul, item.id || item.slug || item.endpoint || item.link, category);
-        }
-
-        function renderRow(containerId, items, category) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            items.forEach(item => {
-                const title = item.title || item.name || item.judul || 'Tanpa Judul';
-                const poster = item.poster || item.cover || item.image || item.thumb || 'https://via.placeholder.com/300x450';
-                const id = item.id || item.slug || item.endpoint || item.link;
-
-                const card = document.createElement('div');
-                card.className = 'media-card flex-shrink-0 cursor-pointer group relative rounded-lg overflow-hidden bg-gray-900 border border-gray-800';
-                card.innerHTML = `
-                    <img src="${poster}" alt="${title}" class="w-full h-60 md:h-72 object-cover rounded-lg group-hover:scale-105 transition duration-300">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 p-3 flex flex-col justify-end">
-                        <p class="text-xs font-bold line-clamp-2 text-white">${title}</p>
-                        <span class="text-[10px] text-orange-400 mt-1 uppercase font-semibold">${category}</span>
-                    </div>
-                `;
-                card.onclick = () => openPlayer(title, id, category);
-                container.appendChild(card);
-            });
-        }
-
-        function openPlayer(title, id, category) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('videoIframe').src = `${API_BASE_URL}/${category}/play?id=${encodeURIComponent(id)}`;
-            document.getElementById('playerModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('videoIframe').src = '';
-            document.getElementById('playerModal').classList.add('hidden');
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    // Jalankan fetch saat halaman selesai dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchHomeData();
+    });
+  </script>
 </body>
 </html>

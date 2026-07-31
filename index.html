@@ -304,7 +304,7 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/iqiyi/home');
+                const res = await apiFetch('/iqiyi/trending');
                 renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);

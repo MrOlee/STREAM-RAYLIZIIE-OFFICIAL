@@ -216,6 +216,15 @@
             if (Array.isArray(res.result)) return res.result;
             if (res.result && Array.isArray(res.result.list)) return res.result.list;
             if (Array.isArray(res.list)) return res.list;
+            // Handle nested objects / arrays recursively if needed
+            for (let key in res) {
+                if (Array.isArray(res[key])) return res[key];
+                if (res[key] && typeof res[key] === 'object') {
+                    for (let subKey in res[key]) {
+                        if (Array.isArray(res[key][subKey])) return res[key][subKey];
+                    }
+                }
+            }
             return [];
         }
 
@@ -304,7 +313,7 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/iqiyi/trending');
+                const res = await apiFetch('/viu/home?country=ID&lang=id');
                 renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
@@ -320,8 +329,8 @@
 
             grid.innerHTML = items.map(item => {
                 const key = storeItem(item);
-                const title = item.title || item.name || item.subjectTitle || 'Judul Konten';
-                const thumb = item.cover_url || item.thumb || item.poster || item.image || placeholderImg;
+                const title = item.title || item.name || item.subjectTitle || item.synopsis || 'Judul Konten';
+                const thumb = item.cover_url || item.thumb || item.poster || item.image || item.img || placeholderImg;
                 const badge = item.episode || item.sub || item.type || 'Sub Indo';
 
                 return `
@@ -359,7 +368,7 @@
                     });
                     items = extractItems(res);
                 } else if (activeCategory === 'drakor') {
-                    const res = await apiFetch(`/iqiyi/search?q=${encodeURIComponent(query)}`);
+                    const res = await apiFetch(`/viu/search?q=${encodeURIComponent(query)}&page=1&limit=16`);
                     items = extractItems(res);
                 }
                 renderGrid(items);
@@ -391,14 +400,17 @@
             const title = item.title || item.name || item.subjectTitle || 'Detail Konten';
             titleEl.innerText = title;
             metaEl.innerHTML = `<span class="bg-gray-800 px-2 py-0.5 rounded text-[10px]">Streaming Ready</span>`;
-            synopEl.innerText = item.deskripsi || item.synopsis || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
+            synopEl.innerText = item.deskripsi || item.synopsis || item.description || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
             let episodes = item.episodes || item.episode_list || [];
-            if (activeCategory === 'drakor' && item.pathplay) {
+            if (activeCategory === 'drakor' && (item.series_id || item.id)) {
                 try {
-                    const detailRes = await apiFetch(`/iqiyi/detail?pathplay=${item.pathplay}&lang=id_id`);
+                    const sId = item.series_id || item.id;
+                    const detailRes = await apiFetch(`/viu/detail?series_id=${sId}`);
                     const detailData = detailRes.data || detailRes;
-                    if (detailData && detailData.episodes) episodes = detailData.episodes;
+                    if (detailData && (detailData.episodes || detailData.list)) {
+                        episodes = detailData.episodes || detailData.list;
+                    }
                 } catch (err) {}
             }
 
@@ -421,9 +433,9 @@
             if (!ep) return;
 
             let url = ep.stream_url || ep.url || ep.embed_url;
-            if (!url && ep.slug) {
+            if (!url && ep.product_id) {
                 try {
-                    const playRes = await apiFetch(`/iqiyi/play?slug=${ep.slug}&lang=id_id`);
+                    const playRes = await apiFetch(`/viu/play?product_id=${ep.product_id}&lang=id`);
                     const playData = playRes.data || playRes;
                     url = playData.stream_url || playData.url || playData.embed_url;
                 } catch (e) {}

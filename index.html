@@ -258,14 +258,12 @@
             return key;
         }
 
-        // Penanganan Ekstraksi Target Episode
         function getEpTarget(ep) {
             if (!ep) return '';
             if (typeof ep === 'string') return ep;
             return ep.path || ep.endpoint || ep.episode_endpoint || ep.url || ep.link || ep.id || ep.slug || ep.stream_url || ep.embed_url || '';
         }
 
-        // Generic API Fetcher (dengan Opsi Silent)
         async function apiFetch(endpoint, silent = false) {
             if (!silent) showLoading(true);
             hideError();
@@ -676,13 +674,13 @@
             }
         }
 
-        // --- ASYNC VIDEO STREAMING FETCHER ---
+        // --- PEMUTAR VIDEO STREAMING DENGAN DIRECT PROXY FALLBACK ---
         async function playEpisode(targetVal) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
             if (!targetVal) {
-                placeholder.innerHTML = `<p class="text-xs text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Parameter video kosong.</p>`;
+                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Parameter video tidak valid.</p>`;
                 return;
             }
 
@@ -694,43 +692,49 @@
             iframe.classList.add('hidden');
             iframe.src = '';
 
-            let finalEmbedUrl = String(targetVal);
+            let targetStr = String(targetVal);
 
-            // Jika berupa string endpoint/path, lakukan fetch ke API
-            if (!finalEmbedUrl.startsWith('http://') && !finalEmbedUrl.startsWith('https://')) {
-                const streamEndpoints = ['/stream', '/episode'];
-                const streamParamKeys = ['path', 'endpoint', 'id', 'url', 'slug'];
-                let streamRes = null;
-
-                streamFetchLoop:
-                for (const epPath of streamEndpoints) {
-                    for (const pKey of streamParamKeys) {
-                        try {
-                            const testUrl = `${epPath}?${pKey}=${encodeURIComponent(finalEmbedUrl)}`;
-                            const res = await apiFetch(testUrl, true);
-                            if (res && (res.stream_url || res.embed_url || res.url || res.data || res.link)) {
-                                streamRes = res;
-                                break streamFetchLoop;
-                            }
-                        } catch (e) {}
-                    }
-                }
-
-                if (streamRes) {
-                    const data = streamRes.data || streamRes;
-                    finalEmbedUrl = data.embed_url || data.stream_url || data.url || data.link || 
-                                    (data.stream_servers && data.stream_servers[0] ? data.stream_servers[0].url : '') ||
-                                    (data.servers && data.servers[0] ? data.servers[0].url : '') || finalEmbedUrl;
-                }
-            }
-
-            if (finalEmbedUrl && (finalEmbedUrl.startsWith('http://') || finalEmbedUrl.startsWith('https://'))) {
+            // 1. Jika bernilai URL lengkap (http/https), langsung muat di iframe
+            if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
-                iframe.src = finalEmbedUrl;
-            } else {
-                placeholder.innerHTML = `<p class="text-xs text-red-400 p-4"><i class="fa-solid fa-circle-xmark mr-1"></i> Gagal mengekstrak URL pemutar video dari server.</p>`;
+                iframe.src = targetStr;
+                return;
             }
+
+            // 2. Coba fetch JSON ke server stream API
+            const streamEndpoints = ['/stream', '/episode', '/watch'];
+            const streamParamKeys = ['path', 'endpoint', 'id', 'url', 'slug', 'param'];
+            let resolvedUrl = null;
+
+            for (const epPath of streamEndpoints) {
+                for (const pKey of streamParamKeys) {
+                    try {
+                        const testUrl = `${epPath}?${pKey}=${encodeURIComponent(targetStr)}`;
+                        const res = await apiFetch(testUrl, true);
+                        if (res) {
+                            const data = res.data || res;
+                            const embed = data.embed_url || data.stream_url || data.url || data.link || data.stream ||
+                                          (data.stream_servers && data.stream_servers[0] ? data.stream_servers[0].url : null) ||
+                                          (data.servers && data.servers[0] ? data.servers[0].url : null);
+                            if (embed && typeof embed === 'string' && (embed.startsWith('http://') || embed.startsWith('https://'))) {
+                                resolvedUrl = embed;
+                                break;
+                            }
+                        }
+                    } catch (e) {}
+                }
+                if (resolvedUrl) break;
+            }
+
+            // 3. FALLBACK: Jika API tidak mengembalikan JSON URL, langsung tembak endpoint Proxy Vercel
+            if (!resolvedUrl) {
+                resolvedUrl = `${BASE_URL}/stream?path=${encodeURIComponent(targetStr)}`;
+            }
+
+            placeholder.classList.add('hidden');
+            iframe.classList.remove('hidden');
+            iframe.src = resolvedUrl;
         }
 
         function closeModal() {

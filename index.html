@@ -220,6 +220,7 @@
             return key;
         }
 
+        // SMART DEEP-EXTRACTION UNTUK TARGET EPISODE
         function getEpTarget(ep) {
             if (!ep) return '';
             if (typeof ep === 'string') return ep.trim();
@@ -242,6 +243,43 @@
                 }
             }
             return '';
+        }
+
+        // CERDAS: Memindai Seluruh Objek JSON untuk Menemukan Link Video External (https://)
+        function findStreamUrl(obj) {
+            if (!obj) return null;
+            
+            if (typeof obj === 'string') {
+                const str = obj.trim();
+                if ((str.startsWith('http://') || str.startsWith('https://')) &&
+                    !str.match(/\.(jpg|jpeg|png|gif|webp|css|js|woff|woff2|ttf|json)($|\?)/i)) {
+                    return str;
+                }
+                return null;
+            }
+
+            if (typeof obj === 'object') {
+                const priorityKeys = ['embed_url', 'stream_url', 'iframe', 'url', 'link', 'stream', 'file', 'src', 'embed'];
+                for (const k of priorityKeys) {
+                    if (obj[k]) {
+                        const found = findStreamUrl(obj[k]);
+                        if (found) return found;
+                    }
+                }
+                if (Array.isArray(obj)) {
+                    for (const item of obj) {
+                        const found = findStreamUrl(item);
+                        if (found) return found;
+                    }
+                }
+                for (const [k, v] of Object.entries(obj)) {
+                    if (!priorityKeys.includes(k)) {
+                        const found = findStreamUrl(v);
+                        if (found) return found;
+                    }
+                }
+            }
+            return null;
         }
 
         async function apiFetch(endpoint, silent = false) {
@@ -648,7 +686,7 @@
             }
         }
 
-        // --- PEMUTAR VIDEO ASYNC (MENGHINDARI VERCEL 404 PAGE IN IFRAME) ---
+        // --- PEMUTAR VIDEO ASYNC (BEBAS DARI VERCEL 404 PAGE IN IFRAME) ---
         async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
@@ -684,38 +722,30 @@
                 return;
             }
 
-            // 2. Fetch data stream dari API secara latar belakang
-            const streamEndpoints = ['/stream', '/episode', '/watch'];
-            const streamParamKeys = ['path', 'endpoint', 'id', 'slug', 'url'];
+            // 2. Lakukan Fetch JSON ke berbagai kombinasi Endpoint API
+            const streamEndpoints = ['/detail', '/stream', '/episode', '/watch'];
+            const streamParamKeys = ['path', 'endpoint', 'id', 'slug', 'url', 'param'];
             let resolvedUrl = null;
 
+            streamSearchLoop:
             for (const epPath of streamEndpoints) {
                 for (const pKey of streamParamKeys) {
                     try {
                         const testUrl = `${epPath}?${pKey}=${encodeURIComponent(targetStr)}`;
                         const res = await apiFetch(testUrl, true);
                         if (res) {
-                            const data = res.data || res;
-                            let embed = data.embed_url || data.stream_url || data.url || data.link || data.stream || data.iframe;
-                            
-                            if (!embed && Array.isArray(data.servers) && data.servers.length > 0) {
-                                embed = data.servers[0].url || data.servers[0].link || data.servers[0].embed;
-                            }
-                            if (!embed && Array.isArray(data.stream_servers) && data.stream_servers.length > 0) {
-                                embed = data.stream_servers[0].url || data.stream_servers[0].link || data.stream_servers[0].embed;
-                            }
-
-                            if (embed && typeof embed === 'string' && (embed.startsWith('http://') || embed.startsWith('https://'))) {
-                                resolvedUrl = embed;
-                                break;
+                            // Gunakan fungsi pemindai cerdas findStreamUrl untuk menemukan link https:// di dalam JSON
+                            const foundUrl = findStreamUrl(res);
+                            if (foundUrl) {
+                                resolvedUrl = foundUrl;
+                                break streamSearchLoop;
                             }
                         }
                     } catch (e) {}
                 }
-                if (resolvedUrl) break;
             }
 
-            // 3. Hanya set iframe.src jika URL eksternal didapatkan! (Cegah penembakan path internal yang memicu Next.js 404)
+            // 3. Hanya pasang iframe.src jika URL eksternal didapatkan!
             if (resolvedUrl) {
                 placeholder.classList.add('hidden');
                 iframe.classList.remove('hidden');
@@ -725,9 +755,10 @@
                 iframe.classList.add('hidden');
                 iframe.src = '';
                 placeholder.innerHTML = `
-                    <div class="p-4 text-center">
-                        <p class="text-xs text-amber-400 mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Server video tidak merespons URL embed.</p>
-                        <p class="text-[10px] text-gray-500">Pastikan Vercel Serverless Function / Proxy API backend aktif.</p>
+                    <div class="p-4 text-center max-w-md mx-auto">
+                        <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>
+                        <p class="text-xs font-semibold text-gray-200 mb-1">Server video tidak merespons URL pemutar.</p>
+                        <p class="text-[11px] text-gray-400">Endpoint API backend proxy saat ini tidak mengembalikan URL embed streaming untuk episode ini.</p>
                     </div>
                 `;
             }

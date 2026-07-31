@@ -1,3 +1,8 @@
 {
-  "cleanUrls": true
+  "rewrites": [
+    {
+      "source": "/api-proxy/:path*",
+      "destination": "https://indocast.site/api/animekompi/:path*"
+    }
+  ]
 }

@@ -258,10 +258,31 @@
             return key;
         }
 
+        // SMART DEEP-EXTRACTION UNTUK TARGET EPISODE
         function getEpTarget(ep) {
             if (!ep) return '';
-            if (typeof ep === 'string') return ep;
-            return ep.path || ep.endpoint || ep.episode_endpoint || ep.url || ep.link || ep.id || ep.slug || ep.stream_url || ep.embed_url || '';
+            if (typeof ep === 'string') return ep.trim();
+            
+            // Prioritas nama properti umum dari berbagai API
+            const keys = [
+                'path', 'endpoint', 'episode_endpoint', 'url', 'link', 'id', 'slug', 
+                'stream_url', 'embed_url', 'href', 'episode_id', 'episode_slug', 
+                'target', 'param', 'value', 'key'
+            ];
+            
+            for (const k of keys) {
+                if (ep[k] && typeof ep[k] === 'string' && ep[k].trim() !== '') {
+                    return ep[k].trim();
+                }
+            }
+            
+            // Fallback: Cari nilai string pertama dalam objek yang bukan title/name/number
+            for (const [key, val] of Object.entries(ep)) {
+                if (typeof val === 'string' && val.trim() !== '' && !['title', 'name', 'episode', 'number', 'status', 'date'].includes(key.toLowerCase())) {
+                    return val.trim();
+                }
+            }
+            return '';
         }
 
         async function apiFetch(endpoint, silent = false) {
@@ -637,9 +658,8 @@
                 const episodes = detail.episodes || detail.episode_list || detail.episodes_list || [];
                 if (episodes.length > 0) {
                     epListEl.innerHTML = episodes.map((ep, idx) => {
-                        const streamTarget = getEpTarget(ep);
                         const epTitle = (typeof ep === 'object' && (ep.title || ep.name || ep.episode)) ? (ep.title || ep.name || `Episode ${ep.episode}`) : `Episode ${idx + 1}`;
-                        const epKey = storeAnime({ target: streamTarget });
+                        const epKey = storeAnime({ epObj: ep });
                         return `
                         <button onclick="playEpisodeFromCache('${epKey}')" 
                                 class="ep-btn px-3 py-1.5 bg-gray-800 hover:bg-indigo-600 text-gray-200 rounded text-xs font-semibold transition-colors flex items-center gap-1.5">
@@ -647,12 +667,8 @@
                         </button>
                     `}).join('');
 
-                    const firstTarget = getEpTarget(episodes[0]);
-                    if (firstTarget) {
-                        playEpisode(firstTarget);
-                    } else {
-                        placeholder.innerHTML = `<p class="text-xs text-amber-400"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Target episode pertama tidak valid.</p>`;
-                    }
+                    // Putar episode pertama secara otomatis dengan mengirimkan objek lengkap
+                    playEpisode(episodes[0]);
                 } else if (detail.stream_url || detail.embed_url || detail.url) {
                     playEpisode(detail.stream_url || detail.embed_url || detail.url);
                     epListEl.innerHTML = `<span class="text-xs text-emerald-400">Episode Tunggal / Movie</span>`;
@@ -669,18 +685,28 @@
 
         function playEpisodeFromCache(cacheKey) {
             const item = window.animeCache[cacheKey];
-            if (item && item.target) {
-                playEpisode(item.target);
+            if (item && item.epObj) {
+                playEpisode(item.epObj);
             }
         }
 
-        // --- PEMUTAR VIDEO STREAMING DENGAN DIRECT PROXY FALLBACK ---
-        async function playEpisode(targetVal) {
+        // --- PEMUTAR VIDEO DENGAN SMART EXTRACTION & PROXY FALLBACK ---
+        async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
 
-            if (!targetVal) {
-                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Parameter video tidak valid.</p>`;
+            let targetStr = getEpTarget(targetInput);
+
+            // Jika ekstraksi masih kosong, namun targetInput berupa objek, coba gunakan properti judul sebagai slug
+            if (!targetStr && typeof targetInput === 'object' && targetInput !== null) {
+                const fallbackTitle = targetInput.title || targetInput.name || '';
+                if (fallbackTitle) {
+                    targetStr = fallbackTitle.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+                }
+            }
+
+            if (!targetStr) {
+                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Data link episode tidak ditemukan pada server.</p>`;
                 return;
             }
 
@@ -691,8 +717,6 @@
             `;
             iframe.classList.add('hidden');
             iframe.src = '';
-
-            let targetStr = String(targetVal);
 
             // 1. Jika bernilai URL lengkap (http/https), langsung muat di iframe
             if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {

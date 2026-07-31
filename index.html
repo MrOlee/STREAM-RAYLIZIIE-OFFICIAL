@@ -220,6 +220,30 @@
             return key;
         }
 
+        function getEpTarget(ep) {
+            if (!ep) return '';
+            if (typeof ep === 'string') return ep.trim();
+            
+            const keys = [
+                'path', 'endpoint', 'episode_endpoint', 'url', 'link', 'id', 'slug', 
+                'stream_url', 'embed_url', 'href', 'episode_id', 'episode_slug', 
+                'target', 'param', 'value', 'key'
+            ];
+            
+            for (const k of keys) {
+                if (ep[k] && typeof ep[k] === 'string' && ep[k].trim() !== '') {
+                    return ep[k].trim();
+                }
+            }
+            
+            for (const [key, val] of Object.entries(ep)) {
+                if (typeof val === 'string' && val.trim() !== '' && !['title', 'name', 'episode', 'number', 'status', 'date'].includes(key.toLowerCase())) {
+                    return val.trim();
+                }
+            }
+            return '';
+        }
+
         // Pindai objek JSON untuk mencari URL streaming eksternal (https://)
         function findStreamUrl(obj) {
             if (!obj) return null;
@@ -668,7 +692,7 @@
             }
         }
 
-        // --- PEMUTAR VIDEO HANDLER (LANGSUNG MEMBACA URL DARI OBJEK EPISODE) ---
+        // --- PEMUTAR VIDEO HANDLER (RESOLUSI SLUG KE /detail) ---
         async function playEpisode(targetInput) {
             const iframe = document.getElementById('video-iframe');
             const placeholder = document.getElementById('player-placeholder');
@@ -679,22 +703,35 @@
 
             placeholder.innerHTML = `
                 <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                <p class="text-xs text-gray-400 animate-pulse">Menghubungkan pemutar video...</p>
+                <p class="text-xs text-gray-400 animate-pulse">Memuat pemutar video...</p>
             `;
 
-            // Cari link stream / embed yang sudah melekat langsung di dalam objek episode
-            let resolvedUrl = findStreamUrl(targetInput);
-
-            // Jika tidak ditemukan langsung, coba ekstrak path lalu cek apakah ada properti link di dalam objek
-            if (!resolvedUrl && typeof targetInput === 'object') {
-                const possibleKeys = ['url', 'link', 'endpoint', 'path', 'stream_url', 'embed_url', 'iframe'];
-                for (const k of possibleKeys) {
-                    if (targetInput[k] && typeof targetInput[k] === 'string' && targetInput[k].startsWith('http')) {
-                        resolvedUrl = targetInput[k];
-                        break;
-                    }
-                }
+            let targetStr = getEpTarget(targetInput);
+            if (!targetStr && typeof targetInput === 'object') {
+                targetStr = targetInput.path || targetInput.endpoint || targetInput.url || targetInput.link || targetInput.slug || '';
             }
+
+            if (!targetStr) {
+                placeholder.innerHTML = `<p class="text-xs text-amber-400 p-4">Target episode tidak valid.</p>`;
+                return;
+            }
+
+            // 1. Jika sudah berupa URL eksternal langsung (http/https)
+            if (targetStr.startsWith('http://') || targetStr.startsWith('https://')) {
+                placeholder.classList.add('hidden');
+                iframe.classList.remove('hidden');
+                iframe.src = targetStr;
+                return;
+            }
+
+            // 2. Jika berupa path/slug episode, minta data stream/embed ke server proxy menggunakan endpoint /detail
+            let resolvedUrl = null;
+            try {
+                const res = await apiFetch(`/detail?path=${encodeURIComponent(targetStr)}`, true);
+                if (res) {
+                    resolvedUrl = findStreamUrl(res);
+                }
+            } catch (e) {}
 
             if (resolvedUrl) {
                 placeholder.classList.add('hidden');
@@ -707,8 +744,8 @@
                 placeholder.innerHTML = `
                     <div class="p-4 text-center max-w-md mx-auto">
                         <i class="fa-solid fa-circle-exclamation text-amber-400 text-2xl mb-2"></i>
-                        <p class="text-xs font-semibold text-gray-200 mb-1">Link pemutar video belum tersedia pada data episode ini.</p>
-                        <p class="text-[11px] text-gray-400">Pastikan backend API mengirimkan properti URL/Embed pada list episode.</p>
+                        <p class="text-xs font-semibold text-gray-200 mb-1">Gagal mengambil URL pemutar dari episode ini.</p>
+                        <p class="text-[11px] text-gray-400">Slug: ${targetStr}</p>
                     </div>
                 `;
             }

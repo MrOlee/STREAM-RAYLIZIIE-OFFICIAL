@@ -304,7 +304,7 @@
 
         async function loadDrakorContent() {
             try {
-                const res = await apiFetch('/iqiyi/trending');
+                const res = await apiFetch('/iqiyi/home');
                 renderGrid(extractItems(res));
             } catch (e) {
                 renderGrid([]);
@@ -351,8 +351,7 @@
                         method: 'POST',
                         body: JSON.stringify({ channelId: "2", page: "1", perPage: "50", sort: "ForYou", genre: "All", country: "All" })
                     });
-                    const allItems = extractItems(res);
-                    items = allItems.filter(i => (i.title || i.name || '').toLowerCase().includes(query.toLowerCase()));
+                    items = extractItems(res).filter(i => (i.title || i.name || '').toLowerCase().includes(query.toLowerCase()));
                 } else if (activeCategory === 'films') {
                     const res = await apiFetch(`/filmbox/search`, {
                         method: 'POST',
@@ -394,7 +393,6 @@
             metaEl.innerHTML = `<span class="bg-gray-800 px-2 py-0.5 rounded text-[10px]">Streaming Ready</span>`;
             synopEl.innerText = item.deskripsi || item.synopsis || 'Nikmati tayangan berkualitas dengan subtitle Indonesia.';
             
-            // Handle episodes or default streaming
             let episodes = item.episodes || item.episode_list || [];
             if (activeCategory === 'drakor' && item.pathplay) {
                 try {

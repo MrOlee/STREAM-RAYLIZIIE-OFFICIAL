@@ -37,7 +37,7 @@
                 </span>
             </div>
 
-            <!-- Navigation Tabs -->
+            <!-- Navigation Tabs (Desktop) -->
             <nav class="hidden md:flex space-x-1 text-sm font-medium">
                 <button onclick="switchTab('home')" id="nav-home" class="nav-btn px-4 py-2 rounded-lg transition-colors bg-indigo-600 text-white">Home</button>
                 <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Jadwal Rilis</button>
@@ -45,12 +45,11 @@
                 <button onclick="switchTab('list')" id="nav-list" class="nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors">Daftar Anime</button>
             </nav>
 
-            <!-- Proxy Toggle / Status -->
+            <!-- Status Indicator -->
             <div class="flex items-center gap-2">
-                <label class="text-xs text-gray-400 hidden sm:inline">CORS Proxy:</label>
-                <button id="proxy-btn" onclick="toggleProxy()" class="text-xs px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300 hover:border-indigo-500 transition-colors">
-                    Off (Direct)
-                </button>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-950 text-emerald-400 border border-emerald-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Vercel API Active
+                </span>
             </div>
         </div>
 
@@ -89,8 +88,8 @@
                     <p id="error-text" class="text-xs text-red-300 mt-0.5"></p>
                 </div>
             </div>
-            <button onclick="enableProxyAndRetry()" class="mt-3 px-3 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded text-xs font-semibold transition-colors">
-                <i class="fa-solid fa-shield-halved mr-1"></i> Coba Gunakan Proxy CORS
+            <button onclick="retryFetch()" class="mt-3 px-3 py-1.5 bg-red-800 hover:bg-red-700 text-white rounded text-xs font-semibold transition-colors">
+                <i class="fa-solid fa-rotate-right mr-1"></i> Coba Muat Ulang
             </button>
         </div>
 
@@ -197,45 +196,23 @@
     <!-- Script Application Logic -->
     <script>
         const API_KEY = "bb47332ceca91e3a2c97128a40c798a69306400072cc4b5a352800697069e45c";
-        const BASE_URL = "https://indocast.site/api/animekompi";
+        // Menggunakan Vercel Rewrite Proxy
+        const BASE_URL = "/api-proxy";
         
-        let useCorsProxy = false;
         let activeTab = 'home';
         let fullAnimeList = [];
         let rawScheduleData = [];
 
-        // Helper Image Fallback
+        // Image Fallback Placeholder
         const placeholderImg = "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&auto=format&fit=crop&q=80";
-
-        function toggleProxy() {
-            useCorsProxy = !useCorsProxy;
-            const btn = document.getElementById('proxy-btn');
-            if (useCorsProxy) {
-                btn.innerText = "On (corsproxy.io)";
-                btn.className = "text-xs px-2.5 py-1 rounded border border-indigo-500 bg-indigo-950 text-indigo-300 font-semibold";
-            } else {
-                btn.innerText = "Off (Direct)";
-                btn.className = "text-xs px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300";
-            }
-            // Reload current tab
-            switchTab(activeTab);
-        }
-
-        function enableProxyAndRetry() {
-            if (!useCorsProxy) toggleProxy();
-            else switchTab(activeTab);
-        }
 
         // Generic API Fetcher
         async function apiFetch(endpoint) {
             showLoading(true);
             hideError();
 
-            const targetUrl = `${BASE_URL}${endpoint}`;
-            const finalUrl = useCorsProxy ? `https://corsproxy.io/?${encodeURIComponent(targetUrl)}` : targetUrl;
-
             try {
-                const response = await fetch(finalUrl, {
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -271,11 +248,15 @@
             document.getElementById('error-container').classList.add('hidden');
         }
 
+        function retryFetch() {
+            switchTab(activeTab);
+        }
+
         // Switch Active Navigation Tab
         function switchTab(tabName) {
             activeTab = tabName;
             
-            // Highlight Buttons
+            // Highlight Desktop Buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.className = "nav-btn px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors";
             });

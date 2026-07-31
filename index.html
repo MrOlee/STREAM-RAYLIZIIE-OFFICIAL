@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>STREAM RAYLIZIIE OFFICIAL - Enterprise Gateway v10.0</title>
   
-  <!-- Tailwind CSS Compiled (Aman Production & Bebas Warning Console) -->
+  <!-- Tailwind CSS Compiled -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   
   <style>
@@ -61,7 +61,7 @@
         FEATURED TAYANGAN
       </span>
       <h1 id="featuredTitle" class="text-3xl sm:text-5xl font-extrabold mt-3 leading-tight text-white">
-        Menghubungkan ke 6 API Provider...
+        Menghubungkan ke API Gateway...
       </h1>
       <p id="featuredDesc" class="text-gray-400 text-sm mt-3">
         Multi-provider gateway aktif: Animekompi, Dramovnime, Filmbox, Vidio, Viu, & iQiyi.
@@ -78,7 +78,7 @@
     </div>
   </header>
 
-  <!-- SEARCH RESULTS SECTION (HIDDEN BY DEFAULT) -->
+  <!-- SEARCH RESULTS SECTION -->
   <section id="searchResultsSection" class="px-6 py-6 hidden">
     <h2 class="text-xl font-bold text-orange-400 mb-4 flex items-center space-x-2">
       <span>🔍 Hasil Pencarian</span>
@@ -193,7 +193,6 @@
 
   <!-- JAVASCRIPT LOGIC ENGINE -->
   <script>
-    // URL CLOUDFLARE WORKER GATEWAY V10.0 KAMU
     const GATEWAY_BASE = 'https://api-rayliziie.rayyankrens0304.workers.dev';
     const SAFE_PLACEHOLDER = 'https://placehold.co/300x450/1e293b/ffffff?text=No+Poster';
 
@@ -201,6 +200,15 @@
     function sanitizeCover(url) {
       if (!url || url.includes('via.placeholder.com')) return SAFE_PLACEHOLDER;
       return url;
+    }
+
+    // Helper aman untuk Fetching Endpoint
+    async function fetchFromGateway(path) {
+      const res = await fetch(`${GATEWAY_BASE}${path}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return await res.json();
     }
 
     // Modal Video Player
@@ -221,10 +229,7 @@
       modal.classList.remove('hidden');
 
       try {
-        // Panggil endpoint /play spesifik provider via Gateway
-        const res = await fetch(`${GATEWAY_BASE}/${provider}/play?id=${encodeURIComponent(itemId)}`);
-        const json = await res.json();
-
+        const json = await fetchFromGateway(`/${provider}/play?id=${encodeURIComponent(itemId)}`);
         const streamUrl = json?.data?.stream_url || json?.data?.url || json?.stream_url;
 
         if (streamUrl) {
@@ -232,11 +237,12 @@
           iframe.src = streamUrl;
         } else {
           titleEl.innerText = title;
-          alert('Stream video sedang disiapkan atau memerlukan iFrame embed.');
+          alert('Stream video tidak tersedia atau butuh iFrame embed.');
         }
       } catch (err) {
         console.error('[PLAY ERROR]:', err);
         titleEl.innerText = title;
+        alert(`Gagal memuat video (${err.message})`);
       }
     }
 
@@ -252,10 +258,11 @@
       const validId = item.id || item.path || item.slug || item.item_id;
       const title = item.title || item.name || 'Untitled';
       const cover = sanitizeCover(item.cover_url || item.poster || item.image || item.thumb);
+      const cleanTitle = title.replace(/'/g, "\\'");
 
       return `
         <div 
-          onclick="openPlayer('${provider}', '${validId}', '${title.replace(/'/g, "\\'")}')" 
+          onclick="openPlayer('${provider}', '${validId}', '${cleanTitle}')" 
           class="flex-none w-40 sm:w-48 bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-800 hover:border-orange-500 transition group cursor-pointer"
         >
           <div class="relative aspect-[3/4] bg-gray-800">
@@ -283,12 +290,11 @@
     // 6 API FETCH ENGINE
     // ==========================================
 
-    // 1. Animekompi (Anime Category Fallback)
+    // 1. Animekompi
     async function loadAnime() {
       const container = document.getElementById('animeContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/anime/home`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/anime/home');
         const data = json.data || json.result || [];
 
         if (data.length > 0) {
@@ -296,49 +302,47 @@
           
           // Featured Banner Update
           const first = data[0];
-          document.getElementById('featuredTitle').innerText = first.title;
+          document.getElementById('featuredTitle').innerText = first.title || 'Featured Anime';
           document.getElementById('btnTontonFeatured').onclick = () => openPlayer('animekompi', first.id || first.path, first.title);
         } else {
           container.innerHTML = `<p class="text-gray-500 text-sm">Tidak ada tayangan anime.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">Gagal memuat anime.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">Gagal memuat anime (${err.message}).</p>`;
       }
     }
 
-    // 2. Dramovnime (Drakor Category Fallback)
+    // 2. Dramovnime
     async function loadDrakor() {
       const container = document.getElementById('drakorContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/drakor/tab`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/drakor/tab');
         const data = json.data || [];
 
         if (data.length > 0) {
           container.innerHTML = data.map(i => createCard(i, 'dramovnime')).join('');
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor siap di-refresh.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Drakor kosong.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">Drakor offline.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">Drakor offline (${err.message}).</p>`;
       }
     }
 
-    // 3. Filmbox (Bioskop Movies Fallback)
+    // 3. Filmbox
     async function loadFilms() {
       const container = document.getElementById('filmsContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/films/home`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/films/home');
         const data = json.data || [];
 
         if (data.length > 0) {
           container.innerHTML = data.map(i => createCard(i, 'filmbox')).join('');
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Bioskop siap di-refresh.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Bioskop kosong.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">Film offline.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">Film offline (${err.message}).</p>`;
       }
     }
 
@@ -346,35 +350,33 @@
     async function loadViu() {
       const container = document.getElementById('viuContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/viu/home`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/viu/home');
         const data = json.data || [];
 
         if (data.length > 0) {
           container.innerHTML = data.map(i => createCard(i, 'viu')).join('');
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Viu siap di-refresh.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Konten Viu kosong.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">Viu offline.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">Viu offline (${err.message}).</p>`;
       }
     }
 
-    // 5. Vidio (Live Channels)
+    // 5. Vidio
     async function loadVidio() {
       const container = document.getElementById('vidioContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/live/channels`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/live/channels');
         const data = json.data || [];
 
         if (data.length > 0) {
           container.innerHTML = data.map(i => createCard(i, 'vidio')).join('');
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">Channel TV siap di-refresh.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">Channel TV kosong.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">Vidio offline.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">Vidio offline (${err.message}).</p>`;
       }
     }
 
@@ -382,17 +384,16 @@
     async function loadiQiyi() {
       const container = document.getElementById('iqiyiContainer');
       try {
-        const res = await fetch(`${GATEWAY_BASE}/iqiyi/trending`);
-        const json = await res.json();
+        const json = await fetchFromGateway('/iqiyi/trending');
         const data = json.data || [];
 
         if (data.length > 0) {
           container.innerHTML = data.map(i => createCard(i, 'iqiyi')).join('');
         } else {
-          container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi Trending siap di-refresh.</p>`;
+          container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi Trending kosong.</p>`;
         }
       } catch (err) {
-        container.innerHTML = `<p class="text-gray-500 text-sm">iQiyi offline.</p>`;
+        container.innerHTML = `<p class="text-red-400/80 text-sm">iQiyi offline (${err.message}).</p>`;
       }
     }
 
@@ -433,12 +434,10 @@
       searchTimeout = setTimeout(async () => {
         resultsSec.classList.remove('hidden');
         document.getElementById('mainSections').classList.add('hidden');
-        container.innerHTML = `<p class="col-span-full text-gray-400 text-sm">Mencari '${query}' di 6 provider...</p>`;
+        container.innerHTML = `<p class="col-span-full text-gray-400 text-sm">Mencari '${query}'...</p>`;
 
         try {
-          // Cari melalui provider Animekompi & Viu
-          const res = await fetch(`${GATEWAY_BASE}/animekompi/list?keyword=${encodeURIComponent(query)}`);
-          const json = await res.json();
+          const json = await fetchFromGateway(`/animekompi/list?keyword=${encodeURIComponent(query)}`);
           const data = json.data || [];
 
           if (data.length > 0) {
@@ -447,7 +446,7 @@
             container.innerHTML = `<p class="col-span-full text-gray-500 text-sm">Tidak ada hasil untuk '${query}'.</p>`;
           }
         } catch (err) {
-          container.innerHTML = `<p class="col-span-full text-red-400 text-sm">Gagal melakukan pencarian.</p>`;
+          container.innerHTML = `<p class="col-span-full text-red-400 text-sm">Gagal melakukan pencarian (${err.message}).</p>`;
         }
       }, 500);
     });
